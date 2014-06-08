@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<project name="B12_DataMiner_v3">
+
+<taskdef name="swtjar" classname="org.swtjar.ant.SWTJarTask" classpath="./bin/swtjar.jar"/>
+
+	<!-- Package cross platform SWT Jar -->
+	<swtjar jarfile="./bin/B12_PostProcessor.jar" targetmainclass="Main" swtversion="4.3">
+
+		  <!-- Application Classes -->
+		  <fileset dir="./bin/" includes="**/*.class" />
+  
+		  <!-- SWT Jars -->
+		  <fileset dir="./bin" includes="swt-*-4.3.jar" />
+		
+		  <!-- Jericho Jar -->
+		  <zipfileset excludes="META-INF/*.MF" src="bin/jericho-html-3.3.jar"/>
+
+	</swtjar>
+
+</project>
