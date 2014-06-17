@@ -70,12 +70,17 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	LinkedHashMap<String,MiniJavaClass> Classes = null;
 	MiniJavaBody currentBodyContext = null;
 	MiniJavaClass currentClassContext = null;
-	LinkedHashMap<String,Integer> tempVarName = new LinkedHashMap<String,Integer>(); //This one keeps the number of the tempVariables. Remember to clear after use.
-	LinkedHashMap<String,Integer> tempClassName = new LinkedHashMap<String,Integer>(); //This one keeps the vTables for the classes. Remember to clear after use.
+	
+	//Use this to check the type of an expression.
+	TypeCheckVisitor typeRetriever = null;
+	
+	//This one keeps the TEMP variables that hold the vTables for the classes. Remember to clear after use.
+	LinkedHashMap<String,Integer> tempClassTable = new LinkedHashMap<String,Integer>();
 	
 	Writer output = null;
 	Integer tempCounter = 0;
 	Integer tabLevel = 0;
+	Integer labelCounter = 0;
 	
 	/**
 	 * @param vt 
@@ -83,6 +88,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 * 
 	 */
 	public PigletTranslationVisitor(TypeCheckVisitor vt, Writer writer) {
+		typeRetriever = vt;
 		Classes = vt.getClassesMap();
 		output = writer;
 		MiniJavaClass tempClass = null;
@@ -181,6 +187,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	@Override
 	public String visit(NodeToken n, String argu) {
 		return n.tokenImage;
+		//TODO make this write the TEMP associated with this variable? Or a begin/return/end statement for fields? Use argu to determine this? 
 	}
 
 	/* (non-Javadoc)
@@ -205,13 +212,14 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 		this.writeToOutputFirst("MAIN\n");
 		++tabLevel;
 		//Write main method body (declarations and body)
-		n.f14.accept(this,null);
 		n.f15.accept(this,null);
 		--tabLevel;
 		//Write main finish
 		this.writeToOutputFirst("END\n\n");
 		//Clear tempVars
-		tempVarName.clear();
+		tempClassTable.clear();
+		currentClassContext=null;
+		currentBodyContext=null;
 		return null;
 	}
 
@@ -266,7 +274,6 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(MethodDeclaration n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
 		//Get context
 		currentBodyContext=currentClassContext.Methods.get(n.f2.f0.tokenImage).body;
 		//Get the first available tempVar
@@ -274,6 +281,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 		//Write the method name for the piglet
 		this.writeToOutputFirst(currentBodyContext.parent.pigletMethodName()+" ["+currentBodyContext.parent.getArgNum().toString()+"] \n");
 		++tabLevel;
+		//Begin method
 		this.writeToOutputFirst("BEGIN \n");
 		++tabLevel;
 		//We only care about the statements and the return
@@ -287,6 +295,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 		//Remove method from context
 		tempCounter=-1;
 		currentBodyContext=null;
+		tempClassTable.clear();
 		return null;
 	}
 
@@ -367,7 +376,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(Statement n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		n.f0.accept(this,null);
 		return null;
 	}
 
@@ -376,7 +385,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(Block n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		n.f1.accept(this,null);
 		return null;
 	}
 
@@ -384,9 +393,17 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 * @see visitor.GJVisitor#visit(syntaxtree.AssignmentStatement, java.lang.Object)
 	 */
 	@Override
-	public String visit(AssignmentStatement n, String argu)
-			throws VisitorException {
-		// TODO Auto-generated method stub
+	public String visit(AssignmentStatement n, String argu) throws VisitorException {
+		Integer tempVar=currentBodyContext.getArgNum(n.f0.f0.tokenImage);
+		if(tempVar<0) {
+			tempVar=currentClassContext.getArgNum(n.f0.f0.tokenImage);
+			this.writeToOutputFirst("HSTORE TEMP 0 "+tempVar.toString()+" ");
+		}
+		else {
+			this.writeToOutputFirst("MOVE TEMP "+tempVar.toString()+" ");
+		}
+		n.f2.accept(this,null);
+		this.writeToOutput("\n");
 		return null;
 	}
 
@@ -394,9 +411,66 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 * @see visitor.GJVisitor#visit(syntaxtree.ArrayAssignmentStatement, java.lang.Object)
 	 */
 	@Override
-	public String visit(ArrayAssignmentStatement n, String argu)
-			throws VisitorException {
-		// TODO Auto-generated method stub
+	public String visit(ArrayAssignmentStatement n, String argu) throws VisitorException {
+		Integer tempVar=currentBodyContext.getArgNum(n.f0.f0.tokenImage);
+		Integer arraySizeTemp=-1;
+		Integer arrayLocationTemp=-1;
+		Integer arrayOffsetTemp=-1;
+		Boolean isField=false;
+		//If this is a field
+		if(tempVar<0) {
+			tempVar=currentClassContext.getArgNum(n.f0.f0.tokenImage);
+			//Make tempVar be the location of the loaded array location
+			isField=true;
+			Integer arrayVar=tempCounter;
+			tempCounter++;
+			writeToOutputFirst("HLOAD TEMP "+arrayVar.toString()+" TEMP 0 "+tempVar.toString()+"\n");
+			tempVar=arrayVar;
+		}
+		//Check for null
+		writeToOutputFirst("CJUMP LT TEMP "+tempVar.toString()+" 1 L"+labelCounter.toString()+"\n");
+		writeToOutputFirst("\tERROR\n");
+		writeToOutputFirst("L"+labelCounter.toString()+"\n");
+		++labelCounter;
+		//Get Array size
+		arraySizeTemp=tempCounter;
+		tempCounter++;
+		writeToOutputFirst("HLOAD TEMP "+arraySizeTemp.toString()+" TEMP "+tempVar.toString()+" 0\n");
+		//Get Array address
+		arrayLocationTemp=tempCounter;
+		tempCounter++;
+		writeToOutputFirst("HLOAD TEMP "+arrayLocationTemp.toString()+" TEMP "+tempVar.toString()+" 4\n");
+		//Get Array offset
+		arrayOffsetTemp=tempCounter;
+		tempCounter++;
+		writeToOutputFirst("MOVE TEMP "+arrayOffsetTemp.toString()+" ");
+		n.f2.accept(this,null);
+		writeToOutput("\n");
+		//Check offset
+		//First for offset less than 0
+		writeToOutputFirst("CJUMP LT TEMP "+arrayOffsetTemp.toString()+" 0 L"+labelCounter.toString()+"\n");
+		writeToOutputFirst("\tERROR\n");
+		writeToOutputFirst("L"+labelCounter.toString()+"\n");
+		++labelCounter;
+		//Then for offset grater than or equal to size, which translates to offset greater than size-1 
+		//which translates to size-1 less than offset
+		writeToOutputFirst("CJUMP LT MINUS TEMP "+arraySizeTemp.toString()+" 1 TEMP "+arrayOffsetTemp.toString()+" L"+labelCounter.toString()+"\n");
+		writeToOutputFirst("\tERROR\n");
+		writeToOutputFirst("L"+labelCounter.toString()+"\n");
+		++labelCounter;
+		//Make offset a proper offset by multiplying by 4
+		//Make array address point to array address+offset. That makes it point to where we want to write
+		//Write to the array address
+		writeToOutputFirst("HSTORE PLUS TEMP "+arrayLocationTemp.toString()+" TIMES TEMP "+arrayOffsetTemp.toString()+" 4 0 ");
+		n.f5.accept(this,null);
+		writeToOutput("\n");
+		//We no longer need the tempVars, allow them to be used again
+		--tempCounter;
+		--tempCounter;
+		--tempCounter;
+		if(isField) {
+			--tempCounter;
+		}
 		return null;
 	}
 
@@ -405,7 +479,25 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(IfStatement n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		Integer currLabel=labelCounter;
+		++labelCounter;
+		//If the expression (f2) is true (expression returns 1) then continue into the then part, else jump to the else part
+		writeToOutputFirst("CJUMP ");
+		n.f2.accept(this,null);
+		writeToOutput(" L"+currLabel.toString()+"ELSE \n");
+		//Write the then part
+		n.f4.accept(this,null);
+		writeToOutput("\n");
+		//jump to the end
+		writeToOutputFirst("JUMP L"+currLabel.toString()+"ENDIF\n");
+		//The write the else part label and the else part
+		writeToOutputFirst("L"+currLabel.toString()+"ELSE \n");
+		n.f6.accept(this,null);
+		writeToOutput("\n");
+		//Write the end label
+		writeToOutputFirst("L"+currLabel.toString()+"ENDIF\n");
+		//Noop to ensure endif label has a valid address
+		writeToOutputFirst("NOOP\n");
 		return null;
 	}
 
@@ -414,7 +506,28 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(WhileStatement n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		//LWHILESTART
+		//CJUMP EXPRESSION LWHILEEND
+		//	STUFF
+		//JUMP LWHILESTART
+		//LWHILEEND
+		Integer currLabel=labelCounter;
+		++labelCounter;
+		//Start label to return to so that you can check condition
+		writeToOutputFirst("L"+currLabel.toString()+"WHILESTART\n");
+		//Jump to end if expr false
+		writeToOutputFirst("CJUMP ");
+		n.f2.accept(this,null);
+		writeToOutput(" L"+currLabel.toString()+"WHILEEND\n");
+		//What the while loop will execute
+		n.f4.accept(this,null);
+		//Jump to start to check condition
+		writeToOutput("\n");
+		writeToOutputFirst("JUMP L"+currLabel.toString()+"WHILESTART\n");
+		//End label to jump to on condition false
+		writeToOutputFirst("L"+currLabel.toString()+"WHILEEND\n");
+		//Noop to ensure endwhile label has a valid address
+		writeToOutputFirst("NOOP\n");
 		return null;
 	}
 
@@ -423,7 +536,9 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(PrintStatement n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		writeToOutputFirst("PRINT ");
+		n.f2.accept(this,null);
+		writeToOutput("\n");
 		return null;
 	}
 
@@ -432,7 +547,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(Expression n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		n.f0.accept(this,null);
 		return null;
 	}
 
@@ -441,7 +556,11 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(AndExpression n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		//AND is simply multiplication, because 1*1=1 and 1*0=0 and 0*0=0
+		writeToOutput("TIMES ");
+		n.f0.accept(this,null);
+		writeToOutput(" ");
+		n.f2.accept(this,null);
 		return null;
 	}
 
@@ -449,9 +568,11 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 * @see visitor.GJVisitor#visit(syntaxtree.CompareExpression, java.lang.Object)
 	 */
 	@Override
-	public String visit(CompareExpression n, String argu)
-			throws VisitorException {
-		// TODO Auto-generated method stub
+	public String visit(CompareExpression n, String argu) throws VisitorException {
+		writeToOutput("LT ");
+		n.f0.accept(this,null);
+		writeToOutput(" ");
+		n.f2.accept(this,null);
 		return null;
 	}
 
@@ -460,7 +581,10 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(PlusExpression n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		writeToOutput("PLUS ");
+		n.f0.accept(this,null);
+		writeToOutput(" ");
+		n.f2.accept(this,null);
 		return null;
 	}
 
@@ -469,7 +593,10 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(MinusExpression n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		writeToOutput("MINUS ");
+		n.f0.accept(this,null);
+		writeToOutput(" ");
+		n.f2.accept(this,null);
 		return null;
 	}
 
@@ -478,7 +605,10 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(TimesExpression n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		writeToOutput("TIMES ");
+		n.f0.accept(this,null);
+		writeToOutput(" ");
+		n.f2.accept(this,null);
 		return null;
 	}
 
@@ -487,7 +617,66 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(ArrayLookup n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		//Begin segment, requested value returned at end
+		writeToOutput("BEGIN \n");
+		++tabLevel;
+		//Get the location of the array
+		Integer tempVar=tempCounter;
+		++tempCounter;
+		writeToOutputFirst("MOVE TEMP "+tempVar+" ");
+		n.f0.accept(this,null);
+		//Check that array has been allocated
+		//Check for null
+		writeToOutputFirst("CJUMP LT TEMP "+tempVar.toString()+" 1 L"+labelCounter.toString()+"\n");
+		writeToOutputFirst("\tERROR\n");
+		writeToOutputFirst("L"+labelCounter.toString()+"\n");
+		++labelCounter;
+		//Get Array size
+		Integer arraySizeTemp=tempCounter;
+		tempCounter++;
+		writeToOutputFirst("HLOAD TEMP "+arraySizeTemp.toString()+" TEMP "+tempVar.toString()+" 0\n");
+		//Get Array address
+		Integer arrayLocationTemp=tempCounter;
+		tempCounter++;
+		writeToOutputFirst("HLOAD TEMP "+arrayLocationTemp.toString()+" TEMP "+tempVar.toString()+" 4\n");
+		//Get Array offset
+		Integer arrayOffsetTemp=tempCounter;
+		tempCounter++;
+		writeToOutputFirst("MOVE TEMP "+arrayOffsetTemp.toString()+" ");
+		n.f2.accept(this,null);
+		writeToOutput("\n");
+		//Check offset
+		//First for offset less than 0
+		writeToOutputFirst("CJUMP LT TEMP "+arrayOffsetTemp.toString()+" 0 L"+labelCounter.toString()+"\n");
+		writeToOutputFirst("\tERROR\n");
+		writeToOutputFirst("L"+labelCounter.toString()+"\n");
+		++labelCounter;
+		//Then for offset grater than or equal to size, which translates to offset greater than size-1 
+		//which translates to size-1 less than offset
+		writeToOutputFirst("CJUMP LT MINUS TEMP "+arraySizeTemp.toString()+" 1 TEMP "+arrayOffsetTemp.toString()+" L"+labelCounter.toString()+"\n");
+		writeToOutputFirst("\tERROR\n");
+		writeToOutputFirst("L"+labelCounter.toString()+"\n");
+		++labelCounter;
+		//Make offset a proper offset by multiplying by 4
+		//Make array address point to array address+offset. That makes it point to where we want to write
+		//Load the requested value into the tempArray
+		Integer retTemp=tempCounter;
+		tempCounter++;
+		writeToOutputFirst("HLOAD TEMP "+retTemp.toString()+" PLUS TEMP "+arrayLocationTemp.toString()+" TIMES TEMP "+arrayOffsetTemp.toString()+" 4 0 ");
+		writeToOutput("\n");
+		
+		//Return the requested value and end
+		writeToOutputFirst("RETURN TEMP "+retTemp.toString()+" \n");
+		--tabLevel;
+		writeToOutputFirst("END \n");
+		
+		//We no longer need the tempVars, allow them to be used again
+		--tempCounter;
+		--tempCounter;
+		--tempCounter;
+		--tempCounter;
+		--tempCounter;
+		
 		return null;
 	}
 
@@ -496,7 +685,32 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(ArrayLength n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		//Begin segment, requested value returned at end
+		writeToOutput("BEGIN \n");
+		++tabLevel;
+		//Get the location of the array
+		Integer tempVar=tempCounter;
+		++tempCounter;
+		writeToOutputFirst("MOVE TEMP "+tempVar.toString()+" ");
+		n.f0.accept(this,null);
+		//Check that array has been allocated
+		//Check for null
+		writeToOutputFirst("CJUMP LT TEMP "+tempVar.toString()+" 1 L"+labelCounter.toString()+"\n");
+		writeToOutputFirst("\tERROR\n");
+		writeToOutputFirst("L"+labelCounter.toString()+"\n");
+		++labelCounter;
+		//Get Array size
+		Integer arraySizeTemp=tempCounter;
+		tempCounter++;
+		writeToOutputFirst("HLOAD TEMP "+arraySizeTemp.toString()+" TEMP "+tempVar.toString()+" 0\n");
+		//Return the requested value and end
+		writeToOutputFirst("RETURN TEMP "+arraySizeTemp.toString()+" \n");
+		--tabLevel;
+		writeToOutputFirst("END \n");
+		
+		//We no longer need the tempVars, allow them to be used again
+		--tempCounter;
+		--tempCounter;
 		return null;
 	}
 
@@ -505,7 +719,25 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(MessageSend n, String argu) throws VisitorException {
-		// TODO Auto-generated method stub
+		// TODO Finish this
+		//Get the location of the class
+		Integer tempVar=tempCounter;
+		++tempCounter;
+		writeToOutputFirst("MOVE TEMP "+tempVar.toString()+" ");
+		n.f0.accept(this,null);
+		//Check for null
+		writeToOutputFirst("CJUMP LT TEMP "+tempVar.toString()+" 1 L"+labelCounter.toString()+"\n");
+		writeToOutputFirst("\tERROR\n");
+		writeToOutputFirst("L"+labelCounter.toString()+"\n");
+		++labelCounter;
+		//Use the other visitor to determine object type and place in vTable
+		MiniJavaClass callToClass = Classes.get(n.f0.accept(typeRetriever,null));
+		MiniJavaMethod callToMethod = callToClass.Methods.get(n.f2.f0.tokenImage);
+		Integer placeInVTable = callToMethod.position;
+		//Get vTable
+		Integer vTableTemp=tempCounter;
+		++tempCounter;
+		
 		return null;
 	}
 

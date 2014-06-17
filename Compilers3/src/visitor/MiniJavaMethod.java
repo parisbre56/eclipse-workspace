@@ -7,11 +7,21 @@ public class MiniJavaMethod extends Context {
 	String returnType;
 	String name;
 	MiniJavaBody body;
+	Integer position; //TODO set this to its position in the vTable, contructor sarches for similar key in father, if found puts same value, if not found takes this class' counter and increments it
 	
 	public MiniJavaMethod(String retType,MiniJavaClass cParent,String cName) {
 		super(cParent);
 		name=cName;
 		returnType=retType;
+		for(MiniJavaClass it = cParent.extended;it!=null;it= it.extended) {
+			if(it.Methods.containsKey(cName)) {
+				position=it.Methods.get(cName).position;
+				return;
+			}
+		}
+		//Else, if it wasn't found in the fathers
+		position=cParent.methodCounter;
+		cParent.methodCounter=cParent.methodCounter+1;
 	}
 	
 	public String pigletMethodName() {

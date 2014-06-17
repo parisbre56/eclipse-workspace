@@ -15,11 +15,16 @@ public class MiniJavaClass extends Context {
 	String name;
 	MiniJavaClass extended;
 	LinkedHashMap<String,MiniJavaMethod> Methods = new LinkedHashMap<String,MiniJavaMethod>();
+	//Points to the first available method number
+	Integer methodCounter=0;
 	
 	public MiniJavaClass(MiniJavaClass cExtends, String cName) {
 		super(cExtends);
 		extended = cExtends;
 		name=cName;
+		if(cExtends!=null) {
+			methodCounter=cExtends.methodCounter;
+		}
 	}
 	
 	/**
@@ -67,7 +72,7 @@ public class MiniJavaClass extends Context {
 			for(Iterator<Entry<String, String>> it = Vars.entrySet().iterator();it.hasNext();++retInt) {
 				tempEntry = it.next();
 				if(tempEntry.getKey().equals(arg)) {
-					return retInt;
+					return retInt*4;
 				}
 			}
 		}
