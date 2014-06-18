@@ -43,12 +43,7 @@ public class MiniJavaMethod extends Context {
 	 * Unique method Id ensures that there won't be any functions with the same name
 	 */
 	public String pigletMethodName() {
-		if(name.equals("main")) {
-			return "MAIN";
-		}
-		else {
-			return ((MiniJavaClass)(this.cparent)).name+"_"+this.name+"_"+uniqueMethodID.toString();
-		}
+		return ((MiniJavaClass)(this.cparent)).name+"_"+this.name+"_"+uniqueMethodID.toString();
 	}
 	
 	/**

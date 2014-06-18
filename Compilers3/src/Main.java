@@ -31,7 +31,7 @@ public class Main {
 				continue;
 			}
 			System.out.println("Opening file: "+fileName);
-
+			
 			FileInputStream inputFileStream;
 			try {
 				inputFileStream = new FileInputStream(fileName);

@@ -13,3 +13,8 @@
 /ParseException.class
 /Token.class
 /TokenMgrError.class
+/MyVisitor.class
+/TV.class
+/Tree.class
+/TreeVisitor.class
+/Visitor.class

@@ -206,14 +206,39 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 		//Current context is main class, main method
 		currentClassContext=Classes.get(n.f1.f0.tokenImage);
 		currentBodyContext=currentClassContext.Methods.get("main").body;
+		//Write a very simple main segment that only instantiates the main class and calls the main method
+		writeToOutputFirst("MAIN \n");
+		++tabLevel;
+		Integer vTableTemp=tempCounter;
+		++tempCounter;
+		//Create a new main class and load its vTable
+		writeToOutputFirst("HLOAD TEMP "+vTableTemp.toString()+" CALL "+currentClassContext.constructorFunctionName()+" () 0 \n");
+		Integer mainMethodTemp=tempCounter;
+		++tempCounter;
+		//Load the location of the main method
+		writeToOutputFirst("HLOAD TEMP "+mainMethodTemp.toString()+" TEMP "+vTableTemp.toString()+" "+currentBodyContext.parent.getPosition().toString()+" \n");
+		//Call the main method and display what it returns
+		Integer retExitCode=tempCounter;
+		++tempCounter;
+		writeToOutputFirst("MOVE TEMP "+retExitCode.toString()+" CALL TEMP "+mainMethodTemp.toString()+" () \n");
+		//Display exit code
+		//writeToOutputFirst("PRINT TEMP "+retExitCode.toString()+" \n");
+		--tabLevel;
+		writeToOutputFirst("END \n\n");
 		//Write main start
-		this.writeToOutputFirst("MAIN \n");
+		tempCounter=0;
+		this.writeToOutputFirst(currentBodyContext.parent.pigletMethodName()+" [0] \n");
+		++tabLevel;
+		writeToOutputFirst("BEGIN \n");
 		++tabLevel;
 		//Write main method body (statements only, we don't care about declarations)
 		n.f15.accept(this,null);
+		//Return 0 for success (not much choice here)
+		writeToOutputFirst("RETURN 0 \n");
 		--tabLevel;
 		//Write main finish
 		this.writeToOutputFirst("END \n\n");
+		--tabLevel;
 		//Clear tempVars
 		currentClassContext=null;
 		currentBodyContext=null;
@@ -253,7 +278,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 		currentClassContext=Classes.get(n.f1.f0.tokenImage);
 		//We don't care about the vars and the extension, since we've already seen them in the previous visitor.
 		//Get the methods and write them.
-		n.f4.accept(this,null);
+		n.f6.accept(this,null);
 		//Remove class from context
 		currentClassContext=null;
 		return null;
@@ -721,7 +746,9 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 		//Use the other visitor to determine object type and place in vTable
 		typeRetriever.currentClassContext=currentClassContext;
 		typeRetriever.currentBodyContext=currentBodyContext;
+		typeRetriever.requestType=true;
 		MiniJavaClass callToClass = Classes.get(n.f0.accept(typeRetriever,null));
+		typeRetriever.requestType=false;
 		typeRetriever.currentClassContext=null;
 		typeRetriever.currentBodyContext=null;
 		MiniJavaMethod callToMethod = callToClass.Methods.get(n.f2.f0.tokenImage);
@@ -882,16 +909,29 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(NotExpression n, String argu) throws VisitorException {
-		writeToOutput("BEGIN\n");
+		Integer retTempVar=tempCounter;
+		++tempCounter;
+		writeToOutput("BEGIN \n");
 		++tabLevel;
 		//If this is 1 (true), return 0 (false), else got to label false, where you'll return true
 		writeToOutputFirst("CJUMP ");
 		n.f1.accept(this,null);
-		writeToOutput(" L"+labelCounter.toString()+"FALSE\n");
-		writeToOutput("RETURN 0\n");
-		writeToOutputFirst("L"+labelCounter.toString()+"FALSE\n");
+		writeToOutput(" L"+labelCounter.toString()+"FALSE \n");
+		//If true (1 moves on to the next command rather than jumping) return 0 (false)
+		writeToOutputFirst("MOVE TEMP "+retTempVar.toString()+" 0 \n");
+		//Go to end so that you can return false
+		writeToOutputFirst("JUMP L"+labelCounter.toString()+"END \n");
+		//Else if false
+		writeToOutputFirst("L"+labelCounter.toString()+"FALSE \n");
+		//Return true
+		writeToOutputFirst("MOVE TEMP "+retTempVar.toString()+" 1 \n");
+		//This is the end
+		writeToOutputFirst("L"+labelCounter.toString()+"END \n");
+		//Noop because of grammar restrictions
+		writeToOutputFirst("NOOP \n");
+		//Return the negated value
+		writeToOutputFirst("RETURN TEMP "+retTempVar.toString()+" \n");
 		++labelCounter;
-		writeToOutputFirst("RETURN 1\n");
 		--tabLevel;
 		writeToOutputFirst("END ");
 		return null;
@@ -927,8 +967,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 				continue;
 			}
 			//If this is the array constructor
-			else if(conName.equals("intConstructor_")) {
-				//TODO write array stuff, 
+			else if(conName.equals("intConstructor_")) { 
 				//remember you need temp 0 for size
 				tempCounter=1;
 				writeToOutputFirst(conName+" [1] \n");
@@ -937,9 +976,9 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 				writeToOutputFirst("BEGIN \n");
 				++tabLevel;
 				//Check for size less than zero
-				writeToOutputFirst("CJUMP LT TEMP 0 0 L"+labelCounter.toString()+"NULL \n");
+				writeToOutputFirst("CJUMP LT TEMP 0 0 L"+labelCounter.toString()+"OFFSLTZERO \n");
 				writeToOutputFirst("\tERROR \n");
-				writeToOutputFirst("L"+labelCounter.toString()+"NULL \n");
+				writeToOutputFirst("L"+labelCounter.toString()+"OFFSLTZERO \n");
 				++labelCounter;
 				//Allocate array class in arrayVar (one position for length var and one for the pointer to the actual array)
 				Integer arrayVar=tempCounter;
@@ -948,7 +987,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 				//Put size in the first position
 				writeToOutputFirst("HSTORE TEMP "+arrayVar.toString()+" 0 TEMP 0 \n");
 				//Allocate an array at the second position with size equal to sizeVar
-				writeToOutputFirst("HSTORE TEMP "+arrayVar.toString()+" 4 HALLOCATE MULT 4 TEMP 0 \n");
+				writeToOutputFirst("HSTORE TEMP "+arrayVar.toString()+" 4 HALLOCATE TIMES 4 TEMP 0 \n");
 				//Return the array and end
 				writeToOutputFirst("RETURN TEMP "+arrayVar.toString()+" \n");
 				--tabLevel;
@@ -957,7 +996,6 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 			}
 			//If this is a normal class constructor
 			else {
-				//TODO write class stuff
 				//This has no args so tempCounter is 0
 				tempCounter=0;
 				writeToOutputFirst(conName+" [0] \n");
@@ -971,7 +1009,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 				//Allocate space for this instance
 				writeToOutputFirst("MOVE TEMP "+retVar.toString()+" HALLOCATE "+toAllocate.instanceSizeRequirment().toString()+" \n");
 				//Store the vtable in it
-				writeToOutputFirst("HSTORE TEMP "+retVar.toString()+" 0 START \n");
+				writeToOutputFirst("HSTORE TEMP "+retVar.toString()+" 0 BEGIN \n");
 				++tabLevel;
 				//This will hold the vTable
 				Integer retVtable=tempCounter;
@@ -1030,5 +1068,3 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 	}
 
 }
-
-//TODO CHECK ALL WRITES FOR A SPACE AND A NEWLINE IF NECCESSARY OR NOT NEEDED

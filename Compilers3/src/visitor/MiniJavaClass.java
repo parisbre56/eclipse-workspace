@@ -34,7 +34,7 @@ public class MiniJavaClass extends Context {
 	public Integer fieldsInExtended() {
 		Integer retVal=0;
 		for(MiniJavaClass tempClass = extended;tempClass!=null;tempClass=tempClass.extended) {
-			retVal+=tempClass.Vars.hashCode();
+			retVal+=tempClass.Vars.size();
 		}
 		return retVal;
 	}
@@ -69,7 +69,7 @@ public class MiniJavaClass extends Context {
 		for(MiniJavaClass currentClass=this;currentClass!=null;currentClass=currentClass.extended) {
 			Integer retInt=currentClass.fieldsInExtended()+1;//+1 for vTable
 			Entry<String, String> tempEntry;
-			for(Iterator<Entry<String, String>> it = Vars.entrySet().iterator();it.hasNext();++retInt) {
+			for(Iterator<Entry<String, String>> it = currentClass.Vars.entrySet().iterator();it.hasNext();++retInt) {
 				tempEntry = it.next();
 				if(tempEntry.getKey().equals(arg)) {
 					return retInt*4;
