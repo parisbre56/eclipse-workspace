@@ -25,17 +25,23 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		for(String fileName : args) {
+			//Check for non-java file
+			if(!fileName.endsWith(".java")) {
+				System.err.println("Skipping file "+fileName);
+				continue;
+			}
 			System.out.println("Opening file: "+fileName);
-			FileInputStream inputFile;
+
+			FileInputStream inputFileStream;
 			try {
-				inputFile = new FileInputStream(fileName);
+				inputFileStream = new FileInputStream(fileName);
 			} catch (FileNotFoundException e) {
 				System.err.println("ERROR: Unable to open file: "+fileName);
 				System.err.println("ERROR: File does not exist.");
 				continue;
 			}
 			
-			MiniJavaParser p = new MiniJavaParser(inputFile);
+			MiniJavaParser p = new MiniJavaParser(inputFileStream);
 
 			TypeDeclVisitor vd = new TypeDeclVisitor();
 			
@@ -47,7 +53,7 @@ public class Main {
 				System.err.println("ERROR: Stack trace follows:");
 				e1.printStackTrace();
 				try {
-					inputFile.close();
+					inputFileStream.close();
 				} catch (IOException e3) {
 					System.err.println("ERROR: Unable to close file: "+fileName);
 					e3.printStackTrace();
@@ -57,7 +63,7 @@ public class Main {
 			}
 			
 			try {
-				inputFile.close();
+				inputFileStream.close();
 			} catch (IOException e3) {
 				System.err.println("ERROR: Unable to close file: "+fileName);
 				e3.printStackTrace();
@@ -85,10 +91,12 @@ public class Main {
 				continue;
 			}
 			
-			PrintWriter writer;
+			String outFileName;
+			outFileName=fileName.substring(0, fileName.lastIndexOf('.'))+".pg";
 			
+			PrintWriter writer;
 			try {
-				writer = new PrintWriter("the-file-name.txt", "UTF-8");
+				writer = new PrintWriter(outFileName, "UTF-8");
 			} catch (FileNotFoundException | UnsupportedEncodingException e1) {
 				e1.printStackTrace();
 				continue;
@@ -98,7 +106,7 @@ public class Main {
 			
 			try {
 				ptv = new PigletTranslationVisitor(vt,writer);
-				writer.println(root.accept(ptv,null));
+				root.accept(ptv,null);
 			} catch (VisitorException e) {
 				System.err.println("ERROR: Exception during third pass (piglet translation) in file: "+fileName+"\nERROR: Stack trace follows:");
 				e.printStackTrace();
@@ -107,8 +115,7 @@ public class Main {
 			
 			writer.close();
 			
-			System.out.println("Succesfuly processed file: "+fileName);
-			
+			System.out.println("Succesfuly processed file: "+fileName+"\n Output written in: "+outFileName);
 			
 		}
 	}

@@ -61,7 +61,7 @@ public class MiniJavaClass extends Context {
 	/** 
 	 * 
 	 * @param arg is the field we're searching for either in this class' fields or in the classes it extends
-	 * @return the argument so that it can be found via<br>
+	 * @return the argument number * 4 so that it can be found via<br>
 	 * HLOAD {TEMP X to store the result} {ADRESS OF CLASS} getArgNum({ARG NAME}) or<br>
 	 * HSTORE {ADRESS OF CLASS} getArgNum({ARG NAME}) {WHAT WE WANT TO STORE IN IT}
 	 */
@@ -77,5 +77,24 @@ public class MiniJavaClass extends Context {
 			}
 		}
 		return -1;
+	}
+	
+	/** 
+	 * 
+	 * @return the name of the function used to construct instances of this class<br>
+	 * This is usually {Class name}Constructor_<br>
+	 * Classes that have no constructor (int and bool) return null<br>
+	 * int[] returns the special constructor intConstructor_
+	 */
+	public String constructorFunctionName() {
+		//Check for classes that should not have a constructor (int, bool)
+		if(name.equals("int")||name.equals("boolean")) {
+			return null;
+		}
+		//Check for special case int[]
+		if(name.equals("int[]")) {
+			return "intConstructor_";
+		}
+		return name+"Constructor_";
 	}
 }

@@ -4,8 +4,6 @@
 
 package syntaxtree;
 
-import java.io.IOException;
-
 import visitor.VisitorException;
 
 /**

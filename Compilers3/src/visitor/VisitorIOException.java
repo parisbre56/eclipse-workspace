@@ -12,6 +12,11 @@ public class VisitorIOException extends VisitorException {
 	/**
 	 * 
 	 */
+	private static final long serialVersionUID = -4629830388789606096L;
+
+	/**
+	 * 
+	 */
 	public VisitorIOException() {
 		super("An IO exception happened while translating");
 	}

@@ -4,15 +4,27 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 public class MiniJavaMethod extends Context {
+	static Integer nextUniqueID = 0;
+	/** Used to differentiate methods that might end up having the same name by ensuring they all have
+	 *  a unique postfix
+	 */
+	Integer uniqueMethodID;
 	String returnType;
 	String name;
 	MiniJavaBody body;
-	Integer position; //TODO set this to its position in the vTable, contructor sarches for similar key in father, if found puts same value, if not found takes this class' counter and increments it
+	/** Set this to its position in the vTable, child method contructor sarches for similar key in this class' fathers, 
+	 *  if found puts same value, if not found takes this class' counter and increments it
+	 */
+	Integer position;
 	
 	public MiniJavaMethod(String retType,MiniJavaClass cParent,String cName) {
 		super(cParent);
 		name=cName;
 		returnType=retType;
+		uniqueMethodID=nextUniqueID;
+		++nextUniqueID;
+		
+		
 		for(MiniJavaClass it = cParent.extended;it!=null;it= it.extended) {
 			if(it.Methods.containsKey(cName)) {
 				position=it.Methods.get(cName).position;
@@ -24,18 +36,24 @@ public class MiniJavaMethod extends Context {
 		cParent.methodCounter=cParent.methodCounter+1;
 	}
 	
+	/** 
+	 * 
+	 * @return The label this method will be given when translated to a piglet function.<br>
+	 * It is in the form of {CLASS NAME}_{METHOD NAME}_{UNIQUEMETHODID}<br>
+	 * Unique method Id ensures that there won't be any functions with the same name
+	 */
 	public String pigletMethodName() {
 		if(name.equals("main")) {
 			return "MAIN";
 		}
 		else {
-			return ((MiniJavaClass)(this.cparent)).name+"_"+this.name;
+			return ((MiniJavaClass)(this.cparent)).name+"_"+this.name+"_"+uniqueMethodID.toString();
 		}
 	}
 	
 	/**
 	 * 
-	 * @return Returns the number of arguments this one has, including temp 0
+	 * @return Returns the number of arguments this one has, including the this argument (temp 0)
 	 */
 	public Integer getArgNum() {
 		return this.Vars.size()+1; //Plus one because of "this"
@@ -56,5 +74,13 @@ public class MiniJavaMethod extends Context {
 			}
 		}
 		return -1;
+	}
+
+	/** 
+	 * 
+	 * @return (This method's position in the vTable) * 4
+	 */
+	public Integer getPosition() {
+		return this.position*4;
 	}
 }
