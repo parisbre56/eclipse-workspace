@@ -1,19 +1,20 @@
 MAIN 
-	HLOAD TEMP 0 CALL LinkedListConstructor_ () 0 
+	MOVE TEMP 0 CALL LinkedListConstructor_16C0 () 
 	HLOAD TEMP 1 TEMP 0 0 
-	MOVE TEMP 2 CALL TEMP 1 () 
+	HLOAD TEMP 2 TEMP 1 0 
+	MOVE TEMP 3 CALL TEMP 2 (TEMP 0 0) 
 END 
 
-LinkedList_main_29 [0] 
+LinkedList_main_29 [2] 
 	BEGIN 
 		PRINT BEGIN 
-			MOVE TEMP 0 CALL LLConstructor_ () 
-			CJUMP LT TEMP 0 1 L0NULL 
+			MOVE TEMP 2 CALL LLConstructor_19C0 () 
+			CJUMP LT TEMP 2 1 L0NULL 
 				ERROR 
 			L0NULL 
-			HLOAD TEMP 1 TEMP 0 0 
-			HLOAD TEMP 2 TEMP 1 0 
-			RETURN CALL TEMP 2 (TEMP 0) 
+			HLOAD TEMP 3 TEMP 2 0 
+			HLOAD TEMP 4 TEMP 3 0 
+			RETURN CALL TEMP 4 (TEMP 2) 
 		END  
 		RETURN 0 
 	END 
@@ -226,7 +227,7 @@ List_InitNew_37 [4]
 List_Insert_38 [2] 
 	BEGIN 
 		MOVE TEMP 3 TEMP 0 
-		MOVE TEMP 4 CALL ListConstructor_ () 
+		MOVE TEMP 4 CALL ListConstructor_18C0 () 
 		MOVE TEMP 2 BEGIN 
 			MOVE TEMP 5 TEMP 4 
 			CJUMP LT TEMP 5 1 L18NULL 
@@ -546,7 +547,7 @@ List_Print_45 [1]
 
 LL_Start_46 [1] 
 	BEGIN 
-		MOVE TEMP 2 CALL ListConstructor_ () 
+		MOVE TEMP 2 CALL ListConstructor_18C0 () 
 		MOVE TEMP 3 BEGIN 
 			MOVE TEMP 7 TEMP 2 
 			CJUMP LT TEMP 7 1 L46NULL 
@@ -575,7 +576,7 @@ LL_Start_46 [1]
 			HLOAD TEMP 15 TEMP 14 36 
 			RETURN CALL TEMP 15 (TEMP 13) 
 		END  
-		MOVE TEMP 4 CALL ElementConstructor_ () 
+		MOVE TEMP 4 CALL ElementConstructor_17C0 () 
 		MOVE TEMP 3 BEGIN 
 			MOVE TEMP 16 TEMP 4 
 			CJUMP LT TEMP 16 1 L49NULL 
@@ -604,7 +605,7 @@ LL_Start_46 [1]
 			RETURN CALL TEMP 24 (TEMP 22) 
 		END  
 		PRINT 10000000 
-		MOVE TEMP 4 CALL ElementConstructor_ () 
+		MOVE TEMP 4 CALL ElementConstructor_17C0 () 
 		MOVE TEMP 3 BEGIN 
 			MOVE TEMP 25 TEMP 4 
 			CJUMP LT TEMP 25 1 L52NULL 
@@ -634,7 +635,7 @@ LL_Start_46 [1]
 			RETURN CALL TEMP 33 (TEMP 31) 
 		END  
 		PRINT 10000000 
-		MOVE TEMP 4 CALL ElementConstructor_ () 
+		MOVE TEMP 4 CALL ElementConstructor_17C0 () 
 		MOVE TEMP 3 BEGIN 
 			MOVE TEMP 34 TEMP 4 
 			CJUMP LT TEMP 34 1 L55NULL 
@@ -662,7 +663,7 @@ LL_Start_46 [1]
 			HLOAD TEMP 42 TEMP 41 36 
 			RETURN CALL TEMP 42 (TEMP 40) 
 		END  
-		MOVE TEMP 6 CALL ElementConstructor_ () 
+		MOVE TEMP 6 CALL ElementConstructor_17C0 () 
 		MOVE TEMP 3 BEGIN 
 			MOVE TEMP 43 TEMP 6 
 			CJUMP LT TEMP 43 1 L58NULL 
@@ -691,7 +692,7 @@ LL_Start_46 [1]
 			RETURN CALL TEMP 51 (TEMP 49 TEMP 6) 
 		END  
 		PRINT 10000000 
-		MOVE TEMP 4 CALL ElementConstructor_ () 
+		MOVE TEMP 4 CALL ElementConstructor_17C0 () 
 		MOVE TEMP 3 BEGIN 
 			MOVE TEMP 52 TEMP 4 
 			CJUMP LT TEMP 52 1 L61NULL 
@@ -763,7 +764,7 @@ LL_Start_46 [1]
 
 
 
-LinkedListConstructor_ [0] 
+LinkedListConstructor_16C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 4 
 		HSTORE TEMP 0 0 BEGIN 
@@ -774,7 +775,7 @@ LinkedListConstructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-ElementConstructor_ [0] 
+ElementConstructor_17C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 16 
 		HSTORE TEMP 0 0 BEGIN 
@@ -790,7 +791,7 @@ ElementConstructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-ListConstructor_ [0] 
+ListConstructor_18C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 16 
 		HSTORE TEMP 0 0 BEGIN 
@@ -810,7 +811,7 @@ ListConstructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-LLConstructor_ [0] 
+LLConstructor_19C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 4 
 		HSTORE TEMP 0 0 BEGIN 
@@ -821,7 +822,7 @@ LLConstructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-intConstructor_ [1] 
+intConstructor_21C0 [1] 
 	BEGIN 
 		CJUMP LT TEMP 0 0 L68OFFSLTZERO 
 			ERROR 

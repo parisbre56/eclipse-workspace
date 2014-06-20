@@ -1,19 +1,20 @@
 MAIN 
-	HLOAD TEMP 0 CALL FactorialConstructor_ () 0 
+	MOVE TEMP 0 CALL FactorialConstructor_11C0 () 
 	HLOAD TEMP 1 TEMP 0 0 
-	MOVE TEMP 2 CALL TEMP 1 () 
+	HLOAD TEMP 2 TEMP 1 0 
+	MOVE TEMP 3 CALL TEMP 2 (TEMP 0 0) 
 END 
 
-Factorial_main_27 [0] 
+Factorial_main_27 [2] 
 	BEGIN 
 		PRINT BEGIN 
-			MOVE TEMP 0 CALL FacConstructor_ () 
-			CJUMP LT TEMP 0 1 L0NULL 
+			MOVE TEMP 2 CALL FacConstructor_12C0 () 
+			CJUMP LT TEMP 2 1 L0NULL 
 				ERROR 
 			L0NULL 
-			HLOAD TEMP 1 TEMP 0 0 
-			HLOAD TEMP 2 TEMP 1 0 
-			RETURN CALL TEMP 2 (TEMP 0 10) 
+			HLOAD TEMP 3 TEMP 2 0 
+			HLOAD TEMP 4 TEMP 3 0 
+			RETURN CALL TEMP 4 (TEMP 2 10) 
 		END  
 		RETURN 0 
 	END 
@@ -41,7 +42,7 @@ Fac_ComputeFac_28 [2]
 
 
 
-FactorialConstructor_ [0] 
+FactorialConstructor_11C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 4 
 		HSTORE TEMP 0 0 BEGIN 
@@ -52,7 +53,7 @@ FactorialConstructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-FacConstructor_ [0] 
+FacConstructor_12C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 4 
 		HSTORE TEMP 0 0 BEGIN 
@@ -63,7 +64,7 @@ FacConstructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-intConstructor_ [1] 
+intConstructor_14C0 [1] 
 	BEGIN 
 		CJUMP LT TEMP 0 0 L3OFFSLTZERO 
 			ERROR 

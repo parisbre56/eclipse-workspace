@@ -1,19 +1,20 @@
 MAIN 
-	HLOAD TEMP 0 CALL MoreThan4Constructor_ () 0 
+	MOVE TEMP 0 CALL MoreThan4Constructor_23C0 () 
 	HLOAD TEMP 1 TEMP 0 0 
-	MOVE TEMP 2 CALL TEMP 1 () 
+	HLOAD TEMP 2 TEMP 1 0 
+	MOVE TEMP 3 CALL TEMP 2 (TEMP 0 0) 
 END 
 
-MoreThan4_main_47 [0] 
+MoreThan4_main_47 [2] 
 	BEGIN 
 		PRINT BEGIN 
-			MOVE TEMP 0 CALL MT4Constructor_ () 
-			CJUMP LT TEMP 0 1 L0NULL 
+			MOVE TEMP 2 CALL MT4Constructor_24C0 () 
+			CJUMP LT TEMP 2 1 L0NULL 
 				ERROR 
 			L0NULL 
-			HLOAD TEMP 1 TEMP 0 0 
-			HLOAD TEMP 2 TEMP 1 0 
-			RETURN CALL TEMP 2 (TEMP 0 1 2 3 4 5 6) 
+			HLOAD TEMP 3 TEMP 2 0 
+			HLOAD TEMP 4 TEMP 3 0 
+			RETURN CALL TEMP 4 (TEMP 2 1 2 3 4 5 6) 
 		END  
 		RETURN 0 
 	END 
@@ -51,7 +52,7 @@ MT4_Change_49 [7]
 
 
 
-MoreThan4Constructor_ [0] 
+MoreThan4Constructor_23C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 4 
 		HSTORE TEMP 0 0 BEGIN 
@@ -62,7 +63,7 @@ MoreThan4Constructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-MT4Constructor_ [0] 
+MT4Constructor_24C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 4 
 		HSTORE TEMP 0 0 BEGIN 
@@ -74,7 +75,7 @@ MT4Constructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-intConstructor_ [1] 
+intConstructor_26C0 [1] 
 	BEGIN 
 		CJUMP LT TEMP 0 0 L2OFFSLTZERO 
 			ERROR 

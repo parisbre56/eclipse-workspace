@@ -209,25 +209,29 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 		//Write a very simple main segment that only instantiates the main class and calls the main method
 		writeToOutputFirst("MAIN \n");
 		++tabLevel;
+		//Create a new main class 
+		Integer mainClassTemp=tempCounter;
+		++tempCounter;
+		writeToOutputFirst("MOVE TEMP "+mainClassTemp.toString()+" CALL "+currentClassContext.constructorFunctionName()+" () \n");
+		//load its vTable
 		Integer vTableTemp=tempCounter;
 		++tempCounter;
-		//Create a new main class and load its vTable
-		writeToOutputFirst("HLOAD TEMP "+vTableTemp.toString()+" CALL "+currentClassContext.constructorFunctionName()+" () 0 \n");
+		writeToOutputFirst("HLOAD TEMP "+vTableTemp.toString()+" TEMP "+mainClassTemp.toString()+" 0 \n");
 		Integer mainMethodTemp=tempCounter;
 		++tempCounter;
 		//Load the location of the main method
 		writeToOutputFirst("HLOAD TEMP "+mainMethodTemp.toString()+" TEMP "+vTableTemp.toString()+" "+currentBodyContext.parent.getPosition().toString()+" \n");
-		//Call the main method and display what it returns
+		//Call the main method
 		Integer retExitCode=tempCounter;
 		++tempCounter;
-		writeToOutputFirst("MOVE TEMP "+retExitCode.toString()+" CALL TEMP "+mainMethodTemp.toString()+" () \n");
+		writeToOutputFirst("MOVE TEMP "+retExitCode.toString()+" CALL TEMP "+mainMethodTemp.toString()+" (TEMP "+mainClassTemp.toString()+" 0) \n");
 		//Display exit code
 		//writeToOutputFirst("PRINT TEMP "+retExitCode.toString()+" \n");
 		--tabLevel;
 		writeToOutputFirst("END \n\n");
 		//Write main start
-		tempCounter=0;
-		this.writeToOutputFirst(currentBodyContext.parent.pigletMethodName()+" [0] \n");
+		tempCounter=currentBodyContext.getTempNum();
+		this.writeToOutputFirst(currentBodyContext.parent.pigletMethodName()+" [2] \n");
 		++tabLevel;
 		writeToOutputFirst("BEGIN \n");
 		++tabLevel;
@@ -967,7 +971,7 @@ public class PigletTranslationVisitor implements GJVisitor<String, String> {
 				continue;
 			}
 			//If this is the array constructor
-			else if(conName.equals("intConstructor_")) { 
+			else if(toAllocate.name.equals("int[]")) { 
 				//remember you need temp 0 for size
 				tempCounter=1;
 				writeToOutputFirst(conName+" [1] \n");

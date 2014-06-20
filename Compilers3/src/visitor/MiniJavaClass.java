@@ -12,6 +12,11 @@ import java.util.Map.Entry;
  *
  */
 public class MiniJavaClass extends Context {
+	static Integer nextUniqueID = 0;
+	/** Used to differentiate class constructors that might end up having the same name by ensuring they all have
+	 *  a unique postfix
+	 */
+	Integer uniqueClassID;
 	String name;
 	MiniJavaClass extended;
 	LinkedHashMap<String,MiniJavaMethod> Methods = new LinkedHashMap<String,MiniJavaMethod>();
@@ -22,6 +27,9 @@ public class MiniJavaClass extends Context {
 		super(cExtends);
 		extended = cExtends;
 		name=cName;
+		uniqueClassID=nextUniqueID;
+		++nextUniqueID;
+		
 		if(cExtends!=null) {
 			methodCounter=cExtends.methodCounter;
 		}
@@ -82,7 +90,7 @@ public class MiniJavaClass extends Context {
 	/** 
 	 * 
 	 * @return the name of the function used to construct instances of this class<br>
-	 * This is usually {Class name}Constructor_<br>
+	 * This is usually {Class name}Constructor_{UNIQUECLASSID}C0<br>
 	 * Classes that have no constructor (int and bool) return null<br>
 	 * int[] returns the special constructor intConstructor_
 	 */
@@ -93,8 +101,8 @@ public class MiniJavaClass extends Context {
 		}
 		//Check for special case int[]
 		if(name.equals("int[]")) {
-			return "intConstructor_";
+			return "intConstructor_"+uniqueClassID.toString()+"C0";
 		}
-		return name+"Constructor_";
+		return name+"Constructor_"+uniqueClassID.toString()+"C0";
 	}
 }

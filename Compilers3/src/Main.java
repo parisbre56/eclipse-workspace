@@ -115,7 +115,7 @@ public class Main {
 			
 			writer.close();
 			
-			System.out.println("Succesfuly processed file: "+fileName+"\n Output written in: "+outFileName);
+			System.out.println("\tSuccesfuly processed file: "+fileName+"\n\tOutput written in: "+outFileName);
 			
 		}
 	}

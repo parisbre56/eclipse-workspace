@@ -4,6 +4,13 @@
 
 class TreeVisitor{
     public static void main(String[] a){
+	boolean fal;
+	boolean tru;
+	
+	fal=false;
+	tru=true;
+	fal=fal&&tru;
+	tru=!fal;
 	System.out.println(new TV().Start());
     }
 }

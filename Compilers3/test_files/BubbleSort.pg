@@ -1,19 +1,20 @@
 MAIN 
-	HLOAD TEMP 0 CALL BubbleSortConstructor_ () 0 
+	MOVE TEMP 0 CALL BubbleSortConstructor_6C0 () 
 	HLOAD TEMP 1 TEMP 0 0 
-	MOVE TEMP 2 CALL TEMP 1 () 
+	HLOAD TEMP 2 TEMP 1 0 
+	MOVE TEMP 3 CALL TEMP 2 (TEMP 0 0) 
 END 
 
-BubbleSort_main_22 [0] 
+BubbleSort_main_22 [2] 
 	BEGIN 
 		PRINT BEGIN 
-			MOVE TEMP 0 CALL BBSConstructor_ () 
-			CJUMP LT TEMP 0 1 L0NULL 
+			MOVE TEMP 2 CALL BBSConstructor_7C0 () 
+			CJUMP LT TEMP 2 1 L0NULL 
 				ERROR 
 			L0NULL 
-			HLOAD TEMP 1 TEMP 0 0 
-			HLOAD TEMP 2 TEMP 1 0 
-			RETURN CALL TEMP 2 (TEMP 0 10) 
+			HLOAD TEMP 3 TEMP 2 0 
+			HLOAD TEMP 4 TEMP 3 0 
+			RETURN CALL TEMP 4 (TEMP 2 10) 
 		END  
 		RETURN 0 
 	END 
@@ -240,7 +241,7 @@ BBS_Print_25 [1]
 BBS_Init_26 [2] 
 	BEGIN 
 		HSTORE TEMP 0 8 TEMP 1 
-		HSTORE TEMP 0 4 CALL intConstructor_ (TEMP 1) 
+		HSTORE TEMP 0 4 CALL intConstructor_9C0 (TEMP 1) 
 		HLOAD TEMP 2 TEMP 0 4 
 		CJUMP LT TEMP 2 1 L30NULL 
 			ERROR 
@@ -386,7 +387,7 @@ BBS_Init_26 [2]
 
 
 
-BubbleSortConstructor_ [0] 
+BubbleSortConstructor_6C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 4 
 		HSTORE TEMP 0 0 BEGIN 
@@ -397,7 +398,7 @@ BubbleSortConstructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-BBSConstructor_ [0] 
+BBSConstructor_7C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 12 
 		HSTORE TEMP 0 0 BEGIN 
@@ -411,7 +412,7 @@ BBSConstructor_ [0]
 		RETURN TEMP 0 
 	END 
 
-intConstructor_ [1] 
+intConstructor_9C0 [1] 
 	BEGIN 
 		CJUMP LT TEMP 0 0 L60OFFSLTZERO 
 			ERROR 
