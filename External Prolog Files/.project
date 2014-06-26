@@ -8,4 +8,26 @@
 	</buildSpec>
 	<natures>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>fractions.pl</name>
+			<type>1</type>
+			<location>C:/Users/Parisbre56/Documents/eclipse_workspace/External Prolog Files/fractions.pl</location>
+		</link>
+		<link>
+			<name>jobshop_opt.pl</name>
+			<type>1</type>
+			<location>C:/Users/Parisbre56/Documents/eclipse_workspace/External Prolog Files/job_shop_opt.pl</location>
+		</link>
+		<link>
+			<name>rehearsal.pl</name>
+			<type>1</type>
+			<location>C:/Users/Parisbre56/Documents/eclipse_workspace/External Prolog Files/rehersal.pl</location>
+		</link>
+		<link>
+			<name>Program Files/swipl/boot/init.pl</name>
+			<type>1</type>
+			<location>C:/Program Files/swipl/boot/init.pl</location>
+		</link>
+	</linkedResources>
 </projectDescription>
