@@ -4,6 +4,8 @@
 
 package syntaxtree;
 
+import visitor.VisitorException;
+
 /**
  * The interface which NodeList, NodeListOptional, and NodeSequence
  * implement.
@@ -15,7 +17,7 @@ public interface NodeListInterface extends Node {
    public int size();
 
    public void accept(visitor.Visitor v);
-   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu);
+   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) throws VisitorException;
    public <R> R accept(visitor.GJNoArguVisitor<R> v);
    public <A> void accept(visitor.GJVoidVisitor<A> v, A argu);
 }

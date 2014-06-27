@@ -4,11 +4,17 @@
 
 package syntaxtree;
 
+import visitor.VisitorException;
+
 /**
  * Represents a grammar choice, e.g. ( A | B )
  */
 public class NodeChoice implements Node {
-   public NodeChoice(Node node) {
+   /**
+	 * 
+	 */
+	private static final long serialVersionUID = -5427307483944452599L;
+public NodeChoice(Node node) {
       this(node, -1);
    }
 
@@ -21,7 +27,7 @@ public class NodeChoice implements Node {
    public void accept(visitor.Visitor v) {
       choice.accept(v);
    }
-   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) {
+   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) throws VisitorException {
       return choice.accept(v,argu);
    }
    public <R> R accept(visitor.GJNoArguVisitor<R> v) {

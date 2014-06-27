@@ -4,6 +4,8 @@
 
 package syntaxtree;
 
+import visitor.VisitorException;
+
 /**
  * Grammar production:
  * <PRE>
@@ -11,7 +13,11 @@ package syntaxtree;
  * </PRE>
  */
 public class NoOpStmt implements Node {
-   private Node parent;
+   /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5745838023647819326L;
+private Node parent;
    public NodeToken nodeToken;
 
    public NoOpStmt(NodeToken n0) {
@@ -27,7 +33,7 @@ public class NoOpStmt implements Node {
    public void accept(visitor.Visitor v) {
       v.visit(this);
    }
-   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) {
+   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) throws VisitorException {
       return v.visit(this,argu);
    }
    public <R> R accept(visitor.GJNoArguVisitor<R> v) {

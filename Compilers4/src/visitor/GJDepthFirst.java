@@ -14,7 +14,7 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
    //
    // Auto class visitors--probably don't need to be overridden.
    //
-   public R visit(NodeList n, A argu) {
+   public R visit(NodeList n, A argu) throws VisitorException {
       if (n.size() == 1)
          return n.elementAt(0).accept(this,argu);
       R _ret=null;
@@ -26,7 +26,7 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
       return _ret;
    }
 
-   public R visit(NodeListOptional n, A argu) {
+   public R visit(NodeListOptional n, A argu) throws VisitorException {
       if ( n.present() ) {
          if (n.size() == 1)
             return n.elementAt(0).accept(this,argu);
@@ -42,14 +42,14 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
          return null;
    }
 
-   public R visit(NodeOptional n, A argu) {
+   public R visit(NodeOptional n, A argu) throws VisitorException {
       if ( n.present() )
          return n.node.accept(this,argu);
       else
          return null;
    }
 
-   public R visit(NodeSequence n, A argu) {
+   public R visit(NodeSequence n, A argu) throws VisitorException {
       if (n.size() == 1)
          return n.elementAt(0).accept(this,argu);
       R _ret=null;
@@ -75,8 +75,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * nodeListOptional -> ( Procedure() )*
     * nodeToken2 -> &lt;EOF&gt;
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Goal n, A argu) {
+   public R visit(Goal n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.stmtList.accept(this, argu);
@@ -90,8 +91,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * <PRE>
     * nodeListOptional -> ( ( Label() )? Stmt() )*
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(StmtList n, A argu) {
+   public R visit(StmtList n, A argu) throws VisitorException {
       return n.nodeListOptional.accept(this, argu);
    }
 
@@ -103,8 +105,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * nodeToken1 -> "]"
     * stmtExp -> StmtExp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Procedure n, A argu) {
+   public R visit(Procedure n, A argu) throws VisitorException {
       R _ret=null;
       n.label.accept(this, argu);
       n.nodeToken.accept(this, argu);
@@ -125,8 +128,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     *       | MoveStmt()
     *       | PrintStmt()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Stmt n, A argu) {
+   public R visit(Stmt n, A argu) throws VisitorException {
       return n.nodeChoice.accept(this, argu);
    }
 
@@ -154,8 +158,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * exp -> Exp()
     * label -> Label()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(CJumpStmt n, A argu) {
+   public R visit(CJumpStmt n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.exp.accept(this, argu);
@@ -168,8 +173,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * nodeToken -> "JUMP"
     * label -> Label()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(JumpStmt n, A argu) {
+   public R visit(JumpStmt n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.label.accept(this, argu);
@@ -183,8 +189,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * integerLiteral -> IntegerLiteral()
     * exp1 -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(HStoreStmt n, A argu) {
+   public R visit(HStoreStmt n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.exp.accept(this, argu);
@@ -200,8 +207,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * exp -> Exp()
     * integerLiteral -> IntegerLiteral()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(HLoadStmt n, A argu) {
+   public R visit(HLoadStmt n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.temp.accept(this, argu);
@@ -216,8 +224,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * temp -> Temp()
     * exp -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(MoveStmt n, A argu) {
+   public R visit(MoveStmt n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.temp.accept(this, argu);
@@ -230,8 +239,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * nodeToken -> "PRINT"
     * exp -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(PrintStmt n, A argu) {
+   public R visit(PrintStmt n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.exp.accept(this, argu);
@@ -248,8 +258,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     *       | IntegerLiteral()
     *       | Label()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Exp n, A argu) {
+   public R visit(Exp n, A argu) throws VisitorException {
       return n.nodeChoice.accept(this, argu);
    }
 
@@ -261,8 +272,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * exp -> Exp()
     * nodeToken2 -> "END"
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(StmtExp n, A argu) {
+   public R visit(StmtExp n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.stmtList.accept(this, argu);
@@ -280,8 +292,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * nodeListOptional -> ( Exp() )*
     * nodeToken2 -> ")"
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Call n, A argu) {
+   public R visit(Call n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.exp.accept(this, argu);
@@ -296,8 +309,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * nodeToken -> "HALLOCATE"
     * exp -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(HAllocate n, A argu) {
+   public R visit(HAllocate n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.exp.accept(this, argu);
@@ -310,8 +324,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * exp -> Exp()
     * exp1 -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(BinOp n, A argu) {
+   public R visit(BinOp n, A argu) throws VisitorException {
       R _ret=null;
       n.operator.accept(this, argu);
       n.exp.accept(this, argu);
@@ -326,8 +341,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     *       | "MINUS"
     *       | "TIMES"
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Operator n, A argu) {
+   public R visit(Operator n, A argu) throws VisitorException {
       return n.nodeChoice.accept(this, argu);
    }
 
@@ -336,8 +352,9 @@ public class GJDepthFirst<R,A> implements GJVisitor<R,A> {
     * nodeToken -> "TEMP"
     * integerLiteral -> IntegerLiteral()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Temp n, A argu) {
+   public R visit(Temp n, A argu) throws VisitorException {
       R _ret=null;
       n.nodeToken.accept(this, argu);
       n.integerLiteral.accept(this, argu);

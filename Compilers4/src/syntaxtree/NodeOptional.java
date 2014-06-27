@@ -4,11 +4,17 @@
 
 package syntaxtree;
 
+import visitor.VisitorException;
+
 /**
  * Represents an grammar optional node, e.g. ( A )? or [ A ]
  */
 public class NodeOptional implements Node {
-   public NodeOptional() {
+   /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3769985739608653944L;
+public NodeOptional() {
       node = null;
    }
 
@@ -26,7 +32,7 @@ public class NodeOptional implements Node {
    public void accept(visitor.Visitor v) {
       v.visit(this);
    }
-   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) {
+   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) throws VisitorException {
       return v.visit(this,argu);
    }
    public <R> R accept(visitor.GJNoArguVisitor<R> v) {

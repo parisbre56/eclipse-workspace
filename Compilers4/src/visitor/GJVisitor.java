@@ -4,7 +4,6 @@
 
 package visitor;
 import syntaxtree.*;
-import java.util.*;
 
 /**
  * All GJ visitors must implement this interface.
@@ -16,10 +15,10 @@ public interface GJVisitor<R,A> {
    // GJ Auto class visitors
    //
 
-   public R visit(NodeList n, A argu);
-   public R visit(NodeListOptional n, A argu);
-   public R visit(NodeOptional n, A argu);
-   public R visit(NodeSequence n, A argu);
+   public R visit(NodeList n, A argu) throws VisitorException;
+   public R visit(NodeListOptional n, A argu) throws VisitorException;
+   public R visit(NodeOptional n, A argu) throws VisitorException;
+   public R visit(NodeSequence n, A argu) throws VisitorException;
    public R visit(NodeToken n, A argu);
 
    //
@@ -34,15 +33,17 @@ public interface GJVisitor<R,A> {
     * nodeListOptional -> ( Procedure() )*
     * nodeToken2 -> &lt;EOF&gt;
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Goal n, A argu);
+   public R visit(Goal n, A argu) throws VisitorException;
 
    /**
     * <PRE>
     * nodeListOptional -> ( ( Label() )? Stmt() )*
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(StmtList n, A argu);
+   public R visit(StmtList n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -52,8 +53,9 @@ public interface GJVisitor<R,A> {
     * nodeToken1 -> "]"
     * stmtExp -> StmtExp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Procedure n, A argu);
+   public R visit(Procedure n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -66,22 +68,25 @@ public interface GJVisitor<R,A> {
     *       | MoveStmt()
     *       | PrintStmt()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Stmt n, A argu);
+   public R visit(Stmt n, A argu) throws VisitorException;
 
    /**
     * <PRE>
     * nodeToken -> "NOOP"
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(NoOpStmt n, A argu);
+   public R visit(NoOpStmt n, A argu) throws VisitorException;
 
    /**
     * <PRE>
     * nodeToken -> "ERROR"
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(ErrorStmt n, A argu);
+   public R visit(ErrorStmt n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -89,16 +94,18 @@ public interface GJVisitor<R,A> {
     * exp -> Exp()
     * label -> Label()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(CJumpStmt n, A argu);
+   public R visit(CJumpStmt n, A argu) throws VisitorException;
 
    /**
     * <PRE>
     * nodeToken -> "JUMP"
     * label -> Label()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(JumpStmt n, A argu);
+   public R visit(JumpStmt n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -107,8 +114,9 @@ public interface GJVisitor<R,A> {
     * integerLiteral -> IntegerLiteral()
     * exp1 -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(HStoreStmt n, A argu);
+   public R visit(HStoreStmt n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -117,8 +125,9 @@ public interface GJVisitor<R,A> {
     * exp -> Exp()
     * integerLiteral -> IntegerLiteral()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(HLoadStmt n, A argu);
+   public R visit(HLoadStmt n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -126,16 +135,18 @@ public interface GJVisitor<R,A> {
     * temp -> Temp()
     * exp -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(MoveStmt n, A argu);
+   public R visit(MoveStmt n, A argu) throws VisitorException;
 
    /**
     * <PRE>
     * nodeToken -> "PRINT"
     * exp -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(PrintStmt n, A argu);
+   public R visit(PrintStmt n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -147,8 +158,9 @@ public interface GJVisitor<R,A> {
     *       | IntegerLiteral()
     *       | Label()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Exp n, A argu);
+   public R visit(Exp n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -158,8 +170,9 @@ public interface GJVisitor<R,A> {
     * exp -> Exp()
     * nodeToken2 -> "END"
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(StmtExp n, A argu);
+   public R visit(StmtExp n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -169,16 +182,18 @@ public interface GJVisitor<R,A> {
     * nodeListOptional -> ( Exp() )*
     * nodeToken2 -> ")"
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Call n, A argu);
+   public R visit(Call n, A argu) throws VisitorException;
 
    /**
     * <PRE>
     * nodeToken -> "HALLOCATE"
     * exp -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(HAllocate n, A argu);
+   public R visit(HAllocate n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -186,8 +201,9 @@ public interface GJVisitor<R,A> {
     * exp -> Exp()
     * exp1 -> Exp()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(BinOp n, A argu);
+   public R visit(BinOp n, A argu) throws VisitorException;
 
    /**
     * <PRE>
@@ -196,29 +212,33 @@ public interface GJVisitor<R,A> {
     *       | "MINUS"
     *       | "TIMES"
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Operator n, A argu);
+   public R visit(Operator n, A argu) throws VisitorException;
 
    /**
     * <PRE>
     * nodeToken -> "TEMP"
     * integerLiteral -> IntegerLiteral()
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Temp n, A argu);
+   public R visit(Temp n, A argu) throws VisitorException;
 
    /**
     * <PRE>
     * nodeToken -> &lt;INTEGER_LITERAL&gt;
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(IntegerLiteral n, A argu);
+   public R visit(IntegerLiteral n, A argu) throws VisitorException;
 
    /**
     * <PRE>
     * nodeToken -> &lt;IDENTIFIER&gt;
     * </PRE>
+ * @throws VisitorException 
     */
-   public R visit(Label n, A argu);
+   public R visit(Label n, A argu) throws VisitorException;
 
 }

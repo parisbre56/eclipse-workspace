@@ -6,11 +6,17 @@ package syntaxtree;
 
 import java.util.*;
 
+import visitor.VisitorException;
+
 /**
  * Represents an optional grammar list, e.g. ( A )*
  */
 public class NodeListOptional implements NodeListInterface {
-   public NodeListOptional() {
+   /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3183668863022121157L;
+public NodeListOptional() {
       nodes = new Vector<Node>();
    }
 
@@ -31,7 +37,7 @@ public class NodeListOptional implements NodeListInterface {
    public void accept(visitor.Visitor v) {
       v.visit(this);
    }
-   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) {
+   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) throws VisitorException {
       return v.visit(this,argu);
    }
    public <R> R accept(visitor.GJNoArguVisitor<R> v) {

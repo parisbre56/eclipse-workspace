@@ -6,11 +6,17 @@ package syntaxtree;
 
 import java.util.*;
 
+import visitor.VisitorException;
+
 /**
  * Represents a grammar list, e.g. ( A )+
  */
 public class NodeList implements NodeListInterface {
-   public NodeList() {
+   /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4485004132183667312L;
+public NodeList() {
       nodes = new Vector<Node>();
    }
 
@@ -30,7 +36,7 @@ public class NodeList implements NodeListInterface {
    public void accept(visitor.Visitor v) {
       v.visit(this);
    }
-   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) {
+   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) throws VisitorException {
       return v.visit(this,argu);
    }
    public <R> R accept(visitor.GJNoArguVisitor<R> v) {

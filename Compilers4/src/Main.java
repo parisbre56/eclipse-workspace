@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
 import syntaxtree.Goal;
+import visitor.ToSpigletVisitor;
+import visitor.VisitorException;
 
 /**
  * 
@@ -65,7 +67,7 @@ public class Main {
 			}
 			
 			String outFileName;
-			outFileName=fileName.substring(0, fileName.lastIndexOf('.'))+".pg";
+			outFileName=fileName.substring(0, fileName.lastIndexOf('.'))+".spg";
 			
 			PrintWriter writer;
 			try {
@@ -78,7 +80,7 @@ public class Main {
 			ToSpigletVisitor vd = new ToSpigletVisitor(writer);
 			
 			try {
-				root.accept(vd);
+				root.accept(vd,null);
 			}
 			catch (VisitorException e) {
 				System.err.println("ERROR: Exception during tranlation in file: "+fileName+"\nERROR: Stack trace follows:");

@@ -6,12 +6,18 @@ package syntaxtree;
 
 import java.util.*;
 
+import visitor.VisitorException;
+
 /**
  * Represents a sequence of nodes nested within a choice, list,
  * optional list, or optional, e.g. ( A B )+ or [ C D E ]
  */
 public class NodeSequence implements NodeListInterface {
-   public NodeSequence(int n) {
+   /**
+	 * 
+	 */
+	private static final long serialVersionUID = -803005124519037651L;
+public NodeSequence(int n) {
       nodes = new Vector<Node>(n);
    }
 
@@ -31,7 +37,7 @@ public class NodeSequence implements NodeListInterface {
    public void accept(visitor.Visitor v) {
       v.visit(this);
    }
-   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) {
+   public <R,A> R accept(visitor.GJVisitor<R,A> v, A argu) throws VisitorException {
       return v.visit(this,argu);
    }
    public <R> R accept(visitor.GJNoArguVisitor<R> v) {
