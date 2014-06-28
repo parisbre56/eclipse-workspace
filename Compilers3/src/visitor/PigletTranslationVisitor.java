@@ -67,9 +67,9 @@ import syntaxtree.WhileStatement;
  *
  */
 public class PigletTranslationVisitor implements GJVisitor<String, String> {
-	LinkedHashMap<String,MiniJavaClass> Classes = null;
-	MiniJavaBody currentBodyContext = null;
-	MiniJavaClass currentClassContext = null;
+	public LinkedHashMap<String,MiniJavaClass> Classes = null;
+	public MiniJavaBody currentBodyContext = null;
+	public MiniJavaClass currentClassContext = null;
 	
 	//Use this to check the type of an expression.
 	TypeCheckVisitor typeRetriever = null;

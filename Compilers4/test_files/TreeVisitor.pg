@@ -1,11 +1,11 @@
 MAIN 
-	MOVE TEMP 0 CALL TreeVisitorConstructor_0C0 () 
+	MOVE TEMP 0 CALL TreeVisitorConstructor_38C0 () 
 	HLOAD TEMP 1 TEMP 0 0 
 	HLOAD TEMP 2 TEMP 1 0 
 	MOVE TEMP 3 CALL TEMP 2 (TEMP 0 0) 
 END 
 
-TreeVisitor_main_0 [2] 
+TreeVisitor_main_60 [2] 
 	BEGIN 
 		MOVE TEMP 2 0 
 		MOVE TEMP 3 1 
@@ -21,7 +21,7 @@ TreeVisitor_main_0 [2]
 			RETURN TEMP 4 
 		END  
 		PRINT BEGIN 
-			MOVE TEMP 5 CALL TVConstructor_1C0 () 
+			MOVE TEMP 5 CALL TVConstructor_39C0 () 
 			CJUMP LT TEMP 5 1 L1NULL 
 				ERROR 
 			L1NULL 
@@ -32,9 +32,9 @@ TreeVisitor_main_0 [2]
 		RETURN 0 
 	END 
 
-TV_Start_1 [1] 
+TV_Start_61 [1] 
 	BEGIN 
-		MOVE TEMP 1 CALL TreeConstructor_2C0 () 
+		MOVE TEMP 1 CALL TreeConstructor_40C0 () 
 		MOVE TEMP 2 BEGIN 
 			MOVE TEMP 5 TEMP 1 
 			CJUMP LT TEMP 5 1 L2NULL 
@@ -127,7 +127,7 @@ TV_Start_1 [1]
 			RETURN CALL TEMP 34 (TEMP 32) 
 		END  
 		PRINT 100000000 
-		MOVE TEMP 4 CALL MyVisitorConstructor_4C0 () 
+		MOVE TEMP 4 CALL MyVisitorConstructor_42C0 () 
 		PRINT 50000000 
 		MOVE TEMP 3 BEGIN 
 			MOVE TEMP 35 TEMP 1 
@@ -214,7 +214,7 @@ TV_Start_1 [1]
 		RETURN 0 
 	END 
 
-Tree_Init_2 [2] 
+Tree_Init_62 [2] 
 	BEGIN 
 		HSTORE TEMP 0 12 TEMP 1 
 		HSTORE TEMP 0 16 0 
@@ -222,19 +222,19 @@ Tree_Init_2 [2]
 		RETURN 1 
 	END 
 
-Tree_SetRight_3 [2] 
+Tree_SetRight_63 [2] 
 	BEGIN 
 		HSTORE TEMP 0 8 TEMP 1 
 		RETURN 1 
 	END 
 
-Tree_SetLeft_4 [2] 
+Tree_SetLeft_64 [2] 
 	BEGIN 
 		HSTORE TEMP 0 4 TEMP 1 
 		RETURN 1 
 	END 
 
-Tree_GetRight_5 [1] 
+Tree_GetRight_65 [1] 
 	BEGIN 
 		RETURN BEGIN 
 			HLOAD TEMP 1 TEMP 0 8 
@@ -242,7 +242,7 @@ Tree_GetRight_5 [1]
 		END  
 	END 
 
-Tree_GetLeft_6 [1] 
+Tree_GetLeft_66 [1] 
 	BEGIN 
 		RETURN BEGIN 
 			HLOAD TEMP 1 TEMP 0 4 
@@ -250,7 +250,7 @@ Tree_GetLeft_6 [1]
 		END  
 	END 
 
-Tree_GetKey_7 [1] 
+Tree_GetKey_67 [1] 
 	BEGIN 
 		RETURN BEGIN 
 			HLOAD TEMP 1 TEMP 0 12 
@@ -258,13 +258,13 @@ Tree_GetKey_7 [1]
 		END  
 	END 
 
-Tree_SetKey_8 [2] 
+Tree_SetKey_68 [2] 
 	BEGIN 
 		HSTORE TEMP 0 12 TEMP 1 
 		RETURN 1 
 	END 
 
-Tree_GetHas_Right_9 [1] 
+Tree_GetHas_Right_69 [1] 
 	BEGIN 
 		RETURN BEGIN 
 			HLOAD TEMP 1 TEMP 0 20 
@@ -272,7 +272,7 @@ Tree_GetHas_Right_9 [1]
 		END  
 	END 
 
-Tree_GetHas_Left_10 [1] 
+Tree_GetHas_Left_70 [1] 
 	BEGIN 
 		RETURN BEGIN 
 			HLOAD TEMP 1 TEMP 0 16 
@@ -280,19 +280,19 @@ Tree_GetHas_Left_10 [1]
 		END  
 	END 
 
-Tree_SetHas_Left_11 [2] 
+Tree_SetHas_Left_71 [2] 
 	BEGIN 
 		HSTORE TEMP 0 16 TEMP 1 
 		RETURN 1 
 	END 
 
-Tree_SetHas_Right_12 [2] 
+Tree_SetHas_Right_72 [2] 
 	BEGIN 
 		HSTORE TEMP 0 20 TEMP 1 
 		RETURN 1 
 	END 
 
-Tree_Compare_13 [3] 
+Tree_Compare_73 [3] 
 	BEGIN 
 		MOVE TEMP 3 0 
 		MOVE TEMP 4 PLUS TEMP 2 1 
@@ -323,9 +323,9 @@ Tree_Compare_13 [3]
 		RETURN TEMP 3 
 	END 
 
-Tree_Insert_14 [2] 
+Tree_Insert_74 [2] 
 	BEGIN 
-		MOVE TEMP 2 CALL TreeConstructor_2C0 () 
+		MOVE TEMP 2 CALL TreeConstructor_40C0 () 
 		MOVE TEMP 3 BEGIN 
 			MOVE TEMP 7 TEMP 2 
 			CJUMP LT TEMP 7 1 L24NULL 
@@ -445,7 +445,7 @@ Tree_Insert_14 [2]
 		RETURN 1 
 	END 
 
-Tree_Delete_15 [2] 
+Tree_Delete_75 [2] 
 	BEGIN 
 		MOVE TEMP 2 TEMP 0 
 		MOVE TEMP 3 TEMP 0 
@@ -600,7 +600,7 @@ Tree_Delete_15 [2]
 		RETURN TEMP 5 
 	END 
 
-Tree_Remove_16 [3] 
+Tree_Remove_76 [3] 
 	BEGIN 
 		CJUMP BEGIN 
 			MOVE TEMP 6 TEMP 2 
@@ -733,7 +733,7 @@ Tree_Remove_16 [3]
 		RETURN 1 
 	END 
 
-Tree_RemoveRight_17 [3] 
+Tree_RemoveRight_77 [3] 
 	BEGIN 
 		L71WHILESTART 
 		CJUMP BEGIN 
@@ -808,7 +808,7 @@ Tree_RemoveRight_17 [3]
 		RETURN 1 
 	END 
 
-Tree_RemoveLeft_18 [3] 
+Tree_RemoveLeft_78 [3] 
 	BEGIN 
 		L79WHILESTART 
 		CJUMP BEGIN 
@@ -883,7 +883,7 @@ Tree_RemoveLeft_18 [3]
 		RETURN 1 
 	END 
 
-Tree_Search_19 [2] 
+Tree_Search_79 [2] 
 	BEGIN 
 		MOVE TEMP 2 TEMP 0 
 		MOVE TEMP 4 1 
@@ -968,7 +968,7 @@ Tree_Search_19 [2]
 		RETURN TEMP 3 
 	END 
 
-Tree_Print_20 [1] 
+Tree_Print_80 [1] 
 	BEGIN 
 		MOVE TEMP 2 TEMP 0 
 		MOVE TEMP 1 BEGIN 
@@ -983,7 +983,7 @@ Tree_Print_20 [1]
 		RETURN 1 
 	END 
 
-Tree_RecPrint_21 [2] 
+Tree_RecPrint_81 [2] 
 	BEGIN 
 		CJUMP BEGIN 
 			MOVE TEMP 3 TEMP 1 
@@ -1061,7 +1061,7 @@ Tree_RecPrint_21 [2]
 		RETURN 1 
 	END 
 
-Tree_accept_22 [2] 
+Tree_accept_82 [2] 
 	BEGIN 
 		PRINT 333 
 		MOVE TEMP 2 BEGIN 
@@ -1076,7 +1076,7 @@ Tree_accept_22 [2]
 		RETURN 0 
 	END 
 
-Visitor_visit_23 [2] 
+Visitor_visit_83 [2] 
 	BEGIN 
 		CJUMP BEGIN 
 			MOVE TEMP 3 TEMP 1 
@@ -1153,7 +1153,7 @@ Visitor_visit_23 [2]
 		RETURN 0 
 	END 
 
-MyVisitor_visit_24 [2] 
+MyVisitor_visit_84 [2] 
 	BEGIN 
 		CJUMP BEGIN 
 			MOVE TEMP 3 TEMP 1 
@@ -1241,82 +1241,82 @@ MyVisitor_visit_24 [2]
 
 
 
-TreeVisitorConstructor_0C0 [0] 
+TreeVisitorConstructor_38C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 4 
 		HSTORE TEMP 0 0 BEGIN 
 			MOVE TEMP 1 HALLOCATE 4 
-			HSTORE TEMP 1 0 TreeVisitor_main_0 
+			HSTORE TEMP 1 0 TreeVisitor_main_60 
 			RETURN TEMP 1 
 		END 
 		RETURN TEMP 0 
 	END 
 
-TVConstructor_1C0 [0] 
+TVConstructor_39C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 4 
 		HSTORE TEMP 0 0 BEGIN 
 			MOVE TEMP 1 HALLOCATE 4 
-			HSTORE TEMP 1 0 TV_Start_1 
+			HSTORE TEMP 1 0 TV_Start_61 
 			RETURN TEMP 1 
 		END 
 		RETURN TEMP 0 
 	END 
 
-TreeConstructor_2C0 [0] 
+TreeConstructor_40C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 28 
 		HSTORE TEMP 0 0 BEGIN 
 			MOVE TEMP 1 HALLOCATE 84 
-			HSTORE TEMP 1 0 Tree_Init_2 
-			HSTORE TEMP 1 4 Tree_SetRight_3 
-			HSTORE TEMP 1 8 Tree_SetLeft_4 
-			HSTORE TEMP 1 12 Tree_GetRight_5 
-			HSTORE TEMP 1 16 Tree_GetLeft_6 
-			HSTORE TEMP 1 20 Tree_GetKey_7 
-			HSTORE TEMP 1 24 Tree_SetKey_8 
-			HSTORE TEMP 1 28 Tree_GetHas_Right_9 
-			HSTORE TEMP 1 32 Tree_GetHas_Left_10 
-			HSTORE TEMP 1 36 Tree_SetHas_Left_11 
-			HSTORE TEMP 1 40 Tree_SetHas_Right_12 
-			HSTORE TEMP 1 44 Tree_Compare_13 
-			HSTORE TEMP 1 48 Tree_Insert_14 
-			HSTORE TEMP 1 52 Tree_Delete_15 
-			HSTORE TEMP 1 56 Tree_Remove_16 
-			HSTORE TEMP 1 60 Tree_RemoveRight_17 
-			HSTORE TEMP 1 64 Tree_RemoveLeft_18 
-			HSTORE TEMP 1 68 Tree_Search_19 
-			HSTORE TEMP 1 72 Tree_Print_20 
-			HSTORE TEMP 1 76 Tree_RecPrint_21 
-			HSTORE TEMP 1 80 Tree_accept_22 
+			HSTORE TEMP 1 0 Tree_Init_62 
+			HSTORE TEMP 1 4 Tree_SetRight_63 
+			HSTORE TEMP 1 8 Tree_SetLeft_64 
+			HSTORE TEMP 1 12 Tree_GetRight_65 
+			HSTORE TEMP 1 16 Tree_GetLeft_66 
+			HSTORE TEMP 1 20 Tree_GetKey_67 
+			HSTORE TEMP 1 24 Tree_SetKey_68 
+			HSTORE TEMP 1 28 Tree_GetHas_Right_69 
+			HSTORE TEMP 1 32 Tree_GetHas_Left_70 
+			HSTORE TEMP 1 36 Tree_SetHas_Left_71 
+			HSTORE TEMP 1 40 Tree_SetHas_Right_72 
+			HSTORE TEMP 1 44 Tree_Compare_73 
+			HSTORE TEMP 1 48 Tree_Insert_74 
+			HSTORE TEMP 1 52 Tree_Delete_75 
+			HSTORE TEMP 1 56 Tree_Remove_76 
+			HSTORE TEMP 1 60 Tree_RemoveRight_77 
+			HSTORE TEMP 1 64 Tree_RemoveLeft_78 
+			HSTORE TEMP 1 68 Tree_Search_79 
+			HSTORE TEMP 1 72 Tree_Print_80 
+			HSTORE TEMP 1 76 Tree_RecPrint_81 
+			HSTORE TEMP 1 80 Tree_accept_82 
 			RETURN TEMP 1 
 		END 
 		RETURN TEMP 0 
 	END 
 
-VisitorConstructor_3C0 [0] 
+VisitorConstructor_41C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 12 
 		HSTORE TEMP 0 0 BEGIN 
 			MOVE TEMP 1 HALLOCATE 4 
-			HSTORE TEMP 1 0 Visitor_visit_23 
+			HSTORE TEMP 1 0 Visitor_visit_83 
 			RETURN TEMP 1 
 		END 
 		RETURN TEMP 0 
 	END 
 
-MyVisitorConstructor_4C0 [0] 
+MyVisitorConstructor_42C0 [0] 
 	BEGIN 
 		MOVE TEMP 0 HALLOCATE 12 
 		HSTORE TEMP 0 0 BEGIN 
 			MOVE TEMP 1 HALLOCATE 4 
-			HSTORE TEMP 1 0 MyVisitor_visit_24 
+			HSTORE TEMP 1 0 MyVisitor_visit_84 
 			RETURN TEMP 1 
 		END 
 		RETURN TEMP 0 
 	END 
 
-intConstructor_6C0 [1] 
+intConstructor_44C0 [1] 
 	BEGIN 
 		CJUMP LT TEMP 0 0 L125OFFSLTZERO 
 			ERROR 

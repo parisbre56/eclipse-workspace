@@ -24,7 +24,6 @@ public class MiniJavaMethod extends Context {
 		uniqueMethodID=nextUniqueID;
 		++nextUniqueID;
 		
-		
 		for(MiniJavaClass it = cParent.extended;it!=null;it= it.extended) {
 			if(it.Methods.containsKey(cName)) {
 				position=it.Methods.get(cName).position;

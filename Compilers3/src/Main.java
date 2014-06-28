@@ -115,6 +115,8 @@ public class Main {
 			
 			writer.close();
 			
+			//TODO make this check for variable initialisation
+			
 			System.out.println("\tSuccesfuly processed file: "+fileName+"\n\tOutput written in: "+outFileName);
 			
 		}

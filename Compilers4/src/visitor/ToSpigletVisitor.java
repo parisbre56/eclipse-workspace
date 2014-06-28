@@ -66,7 +66,10 @@ public class ToSpigletVisitor implements GJVisitor<String, String> {
 	public String visit(NodeList n, String argu) throws VisitorException {
 		String retString = new String();
 		for ( Enumeration<Node> e = n.elements(); e.hasMoreElements(); ) {
-			retString+=e.nextElement().accept(this,argu)+" ";
+			retString+=e.nextElement().accept(this,argu);
+			if(e.hasMoreElements()) {
+				retString+=" ";
+			}
 		}
 		return retString;
 	}
@@ -79,7 +82,10 @@ public class ToSpigletVisitor implements GJVisitor<String, String> {
 		if (n.present()) {
 			String retString = new String();
 			for ( Enumeration<Node> e = n.elements(); e.hasMoreElements(); ) {
-				retString+=e.nextElement().accept(this,argu)+" ";
+				retString+=e.nextElement().accept(this,argu);
+				if(e.hasMoreElements()) {
+					retString+=" ";
+				}
 			}
 			return retString;
 		}
@@ -104,7 +110,10 @@ public class ToSpigletVisitor implements GJVisitor<String, String> {
 	public String visit(NodeSequence n, String argu) throws VisitorException {
 		String retString = new String();
 		for ( Enumeration<Node> e = n.elements(); e.hasMoreElements(); ) {
-			retString+=e.nextElement().accept(this,argu)+" ";
+			retString+=e.nextElement().accept(this,argu);
+			if(e.hasMoreElements()) {
+				retString+=" ";
+			}
 		}
 		return retString;
 	}
@@ -284,14 +293,17 @@ public class ToSpigletVisitor implements GJVisitor<String, String> {
 	public String visit(Call n, String argu) throws VisitorException {
 		String tempStore = n.exp.accept(this,"SimpleExp");
 		String tempList = n.nodeListOptional.accept(this,"Temp");
+		if(tempList==null) {//null means this has no arguments
+			tempList="";
+		}
 		if(argu.equals("SimpleExp")||argu.equals("Temp")) {
 			Integer tempReturn = tempCounter;
 			++tempCounter;
 			writeToOutputFirst("MOVE TEMP "+tempReturn.toString()
-					+"CALL "+tempStore+" "+tempList+"\n");
+					+" CALL "+tempStore+" ("+tempList+")\n");
 			return "TEMP "+tempReturn.toString();
 		}
-		return "CALL "+tempStore+" "+tempList;
+		return "CALL "+tempStore+" ("+tempList+")";
 	}
 
 	/* (non-Javadoc)
@@ -362,6 +374,10 @@ public class ToSpigletVisitor implements GJVisitor<String, String> {
 	 */
 	@Override
 	public String visit(Label n, String argu) throws VisitorException {
+		if(argu==null) {
+			writeToOutputFirst(n.nodeToken.tokenImage+"\n");
+			return n.nodeToken.tokenImage;
+		}
 		if(argu.equals("Temp")) {
 			Integer tempReturn = tempCounter;
 			++tempCounter;
