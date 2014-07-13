@@ -1,0 +1,21 @@
+Need to find liveness of variables.
+Need to find stack allocations needed by procedure.
+Need to find max number of arguments used by functions called inside that procedure.
+In the beginning of each procedure, if we're going to use any of the sX registers, move the old values into the stack by doing ASTORE SPILLEDARG (<numOfArguments>-4+X) sX. At the end, restore their values by doing ALOAD sX SPILLEDARG (<numOfArguments>-4+X).
+Use variables tX for things we don't need to store for later, things we don't care about loosing. Use liveness to determine if we are going to need a variable after a function call and if yes, put it in an s register if possible, else store it in memory.
+
+
+
+Input pass 1: Create an Control Flow Graph for each function, where each statement is its own block. Each block contains variables assigned, variables used, a label (used both for labels and jump statements, a jump pointer and a fall-through pointer. Most blocks are connected by fall-through (Each block is connected to the previous one) Jump blocks are connected by promises: If the requested label does not exist in the blocks, then it will be added to the blocks when the jump block is created by passing through the blocks (maybe keep a list of blocks that lack link to labels?)
+
+!!BLOCKS ARE DOUBLE LINKED LIST WITH BRANCHES!! (have a list of pointers pointing to this block for all blocks)
+
+No need to keep one register open at all times for stack operations. Use v0 and v1 instead!
+
+Block Loop Fixpoint: Find the liveness of variables for each function. Make a note in the liveness of each variable about whether or not there is a function call between its assignment and its use.
+
+For each block, check which variables are used and which are assigned. (increment some kind of liveness counter for each var? Or have a function that computes the max liveness through each execution path? Function better) All previously encountered variables (from all blocks linking to this one) plus the ones used by this block are live, unless the block assigns to them. If the block assigns to them, they are removed from the set of active vars for that block and the ones following it.
+
+Needs fixpoint!! Each instruction/block has an empty set of live variables. Have variable changeOccurred set to false at the beginning of each loop. Loop through list of instructions of the function (order does not matter). For each instruction, all previously encountered variables (from all blocks linking to this one) plus the ones used by this block are live for this block, unless the block assigns to them. If a change  occurred, changeOccurred is set to true. Keep looping while changeOccured is true.
+
+Block pass 2: Start going through the blocks, assigning vars to registers as you go, creating a new block structure in the process. Make sure to put vars that will be needed after a function call in sX registers. Maybe also find the the [numbers] needed for the new function calls. When we can't make an assignment, destroy the old block structure and start creating a new one with the new information. 
