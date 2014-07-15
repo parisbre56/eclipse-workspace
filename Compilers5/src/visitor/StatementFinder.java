@@ -56,7 +56,7 @@ public class StatementFinder implements GJNoArguVisitor<String> {
 	Integer argCount=0;
 	/** Set to true if the v0 register is already in use for a stack operation
 	 */
-	Boolean v0used;
+	Boolean v0used=false;
 	
 	public StatementFinder(CodeBlockSpiglet cBlk, PrintWriter cWriter) {
 		blk=cBlk;
@@ -211,10 +211,23 @@ public class StatementFinder implements GJNoArguVisitor<String> {
 	 */
 	@Override
 	public String visit(HLoadStmt n) {
-		String tempReg = n.temp.accept(this);
 		String tempReg1 = n.temp1.accept(this);
 		String integerLit = n.integerLiteral.accept(this);
-		writer.println("\tHLOAD "+tempReg+" "+tempReg1+" "+integerLit+" ");
+		//If this is in the stack
+		if(blk.varAssigned.regAs==RegisterAs.Stack) {
+			writer.println("\tHLOAD "+RegisterAs.v0.toString()+" "+tempReg1+" "+integerLit+" ");
+			writer.println("\tASTORE SPILLEDARG "+blk.varAssigned.stackPos+" "+RegisterAs.v0.toString()+" ");
+		}
+		//Else if this has not been assigned a value, that means this is useless dead code
+		//since we only need the function call. So we simply ignore it.
+		else if (blk.varAssigned.regAs==RegisterAs.NotYetAssigned) {
+			clearVars();
+			return null;
+		}
+		//Else if this is a normal register
+		else {
+			writer.println("\tHLOAD "+blk.varAssigned.regAs.toString()+" "+tempReg1+" "+integerLit+" ");
+		}
 		clearVars();
 		return null;
 	}
@@ -230,6 +243,12 @@ public class StatementFinder implements GJNoArguVisitor<String> {
 			if(blk.varAssigned.regAs==RegisterAs.Stack) {
 				writer.println("\tASTORE SPILLEDARG "+blk.varAssigned.stackPos+" "+RegisterAs.v0.toString()+" ");
 			}
+			//Else if this has not been assigned a value, that means this is useless dead code
+			//since we only need the function call. So we simply ignore it.
+			else if (blk.varAssigned.regAs==RegisterAs.NotYetAssigned) {
+				clearVars();
+				return null;
+			}
 			//Else if this is in a normal register
 			else {
 				writer.println("\tMOVE "+blk.varAssigned.regAs.toString()+" "+RegisterAs.v0.toString()+" ");
@@ -241,6 +260,12 @@ public class StatementFinder implements GJNoArguVisitor<String> {
 			if(blk.varAssigned.regAs==RegisterAs.Stack) {
 				writer.println("\tMOVE "+RegisterAs.v0.toString()+" "+expString+" ");
 				writer.println("\tASTORE SPILLEDARG "+blk.varAssigned.stackPos+" "+RegisterAs.v0.toString()+" ");
+			}
+			//Else if this has not been assigned a value, that means this is useless dead code
+			//since we only need the function call. So we simply ignore it.
+			else if (blk.varAssigned.regAs==RegisterAs.NotYetAssigned) {
+				clearVars();
+				return null;
 			}
 			//Else if this is in a normal register
 			else {

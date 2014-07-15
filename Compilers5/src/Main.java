@@ -139,6 +139,13 @@ public class Main {
 					continue;
 				}
 				VariableData var = proc.varData.get(i.toString());
+				
+				if(var.regAs==RegisterAs.NotYetAssigned) {
+					//If this var has not been assigned a register
+					//then it is never used and we should ignore it
+					continue;
+				}
+				
 				if(i<4) {
 					RegisterAs argReg = RegisterAs.values()[RegisterAs.a0.ordinal()+i];
 					if(var.regAs==RegisterAs.Stack) {
@@ -195,7 +202,7 @@ public class Main {
 				++stackPos;
 			}
 			
-			writer.println("END \n");
+			writer.println("END \\\\End of function "+proc.name+"\n");
 		}
 	}
 
@@ -213,7 +220,6 @@ public class Main {
 				
 			}
 		}
-		
 	}
 
 	/**

@@ -79,7 +79,7 @@ public class CodeBlockSpiglet {
 	public void addJumpLabelLink(LinkedList<CodeBlockSpiglet> blockData ) {
 		if(this.stType==StatementTypeSpiglet.CJumpStmt||this.stType==StatementTypeSpiglet.JumpStmt) {
 			for(CodeBlockSpiglet cbs : blockData) {
-				if(cbs.label.equals(this.label)&&cbs.stType==StatementTypeSpiglet.Label) {
+				if(cbs.stType==StatementTypeSpiglet.Label&&cbs.label.equals(this.label)) {
 					cbs.prevBlocks.add(this);
 					this.jumpLink=cbs;
 					break;
@@ -88,7 +88,7 @@ public class CodeBlockSpiglet {
 		}
 		else if(this.stType==StatementTypeSpiglet.Label) {
 			for(CodeBlockSpiglet cbs : blockData) {
-				if(cbs.label.equals(this.label)) {
+				if((cbs.stType==StatementTypeSpiglet.CJumpStmt||cbs.stType==StatementTypeSpiglet.JumpStmt)&&cbs.label.equals(this.label)) {
 					if(cbs.stType==StatementTypeSpiglet.CJumpStmt||cbs.stType==StatementTypeSpiglet.JumpStmt) {
 						cbs.jumpLink=this;
 						this.prevBlocks.add(cbs);
@@ -121,6 +121,7 @@ public class CodeBlockSpiglet {
 				//If a live var of this block is not in the live vars of the previous block
 				//and that live var is not in assigned a value the previous block
 				if(!blk.liveVars.containsKey(entrLiv.getKey())
+						&&blk.varAssigned!=null
 						&&!blk.varAssigned.name.equals(entrLiv.getKey())) {
 					//Add it to the list of live vars and note the change
 					blk.liveVars.put(entrLiv.getKey(), entrLiv.getValue());
