@@ -137,7 +137,7 @@ public class BlockCreatorVisitor implements Visitor {
 	 */
 	@Override
 	public void visit(Stmt n) {
-		currBlock=new CodeBlockSpiglet(n.nodeChoice.choice);
+		currBlock=new CodeBlockSpiglet(n.nodeChoice.choice,currProc);
 		//If this is a valid fallthrough block for the previous statement
 		//(that means the previous block is not a jump statement)
 		//create the links to indicate so
@@ -282,7 +282,7 @@ public class BlockCreatorVisitor implements Visitor {
 		
 		//=============
 		//Process the return statement
-		currBlock=new CodeBlockSpiglet(n.simpleExp);
+		currBlock=new CodeBlockSpiglet(n.simpleExp, currProc);
 		currBlock.stType=StatementTypeSpiglet.Return;
 		//If this is a valid fallthrough block for the previous statement
 		//(that means the previous block is not a jump statement)
@@ -388,7 +388,7 @@ public class BlockCreatorVisitor implements Visitor {
 			return;
 		}
 		//Else
-		currBlock=new CodeBlockSpiglet(n);
+		currBlock=new CodeBlockSpiglet(n, currProc);
 		currBlock.stType=StatementTypeSpiglet.Label;
 		//If this is a valid fallthrough block for the previous statement
 		//(that means the previous block is not a jump statement)
