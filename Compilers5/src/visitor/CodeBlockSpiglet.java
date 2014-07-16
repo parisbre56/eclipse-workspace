@@ -121,14 +121,17 @@ public class CodeBlockSpiglet {
 				//If a live var of this block is not in the live vars of the previous block
 				//and that live var is not in assigned a value the previous block
 				if(!blk.liveVars.containsKey(entrLiv.getKey())
-						&&blk.varAssigned!=null
-						&&!blk.varAssigned.name.equals(entrLiv.getKey())) {
+						&&	(blk.varAssigned==null
+							||!blk.varAssigned.name.equals(entrLiv.getKey())
+						)) {
 					//Add it to the list of live vars and note the change
 					blk.liveVars.put(entrLiv.getKey(), entrLiv.getValue());
 					changeOccurred = true;
 					//If this is a block that contains a call, then make sure to mark these vars
 					//so that they aren't assigned to temp registers
-					entrLiv.getValue().procCallInterjected=true;
+					if(blk.containsProcCall) {
+						entrLiv.getValue().procCallInterjected=true;
+					}
 				}
 			}
 		}
@@ -262,7 +265,7 @@ public class CodeBlockSpiglet {
 			liveBlocks=this.fallthroughLink.computeLivenessHeuristic(varEntry);
 		}
 		if(this.jumpLink!=null) {
-			jumpLiveBlocks=this.fallthroughLink.computeLivenessHeuristic(varEntry);
+			jumpLiveBlocks=this.jumpLink.computeLivenessHeuristic(varEntry);
 		}
 		this.livePassChecked=false;
 		//Return the maximum liveness plus one for the current block

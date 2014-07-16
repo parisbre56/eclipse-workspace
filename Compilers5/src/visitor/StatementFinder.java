@@ -383,11 +383,11 @@ public class StatementFinder implements GJNoArguVisitor<String> {
 				if(var.regAs==RegisterAs.Stack) {
 					//Move it from the stack to the passarg (remember the +1)
 					writer.println("\tALOAD "+RegisterAs.v0.toString()+" SPILLEDARG "+var.stackPos+" ");
-					writer.println("\tPASSARG "+(argCount+1)+" "+RegisterAs.v0.toString()+" ");
+					writer.println("\tPASSARG "+(argCount-4+1)+" "+RegisterAs.v0.toString()+" ");
 				}
 				else {
 					//Move it from the register to the passarg (remember the +1)
-					writer.println("\tPASSARG "+(argCount+1)+" "+var.regAs.toString()+" ");
+					writer.println("\tPASSARG "+(argCount-4+1)+" "+var.regAs.toString()+" ");
 				}
 			}
 			++argCount;

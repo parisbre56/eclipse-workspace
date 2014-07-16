@@ -160,12 +160,12 @@ public class Main {
 				else {
 					if(var.regAs==RegisterAs.Stack) {
 						//Take it from the stack and put it in the appropriate stack position
-						writer.println("\tALOAD "+RegisterAs.v0.toString()+" SPILLEDARG "+i+" ");
+						writer.println("\tALOAD "+RegisterAs.v0.toString()+" SPILLEDARG "+(i-4)+" ");
 						writer.println("\tASTORE SPILLEDARG "+var.stackPos+" "+RegisterAs.v0.toString()+" ");
 					}
 					else {
 						//Take it from the stack and put it in the appropriate register
-						writer.println("\tALOAD "+var.regAs.toString()+" SPILLEDARG "+i+" ");
+						writer.println("\tALOAD "+var.regAs.toString()+" SPILLEDARG "+(i-4)+" ");
 					}
 				}
 			}
@@ -202,7 +202,7 @@ public class Main {
 				++stackPos;
 			}
 			
-			writer.println("END \\\\End of function "+proc.name+"\n");
+			writer.println("END //End of function "+proc.name+"\n");
 		}
 	}
 

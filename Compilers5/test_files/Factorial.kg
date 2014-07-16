@@ -1,112 +1,45 @@
-MAIN [0] [2] [2] 
-	ASTORE SPILLEDARG 0 s0 
-	ASTORE SPILLEDARG 1 s1 
-	CALL FactorialConstructor_11C0 
-	MOVE s0 v0 
-	HLOAD t0 s0 0 
-	HLOAD s1 t0 0 
-	MOVE t0 0 
-	MOVE a0 s0 
-	MOVE a1 t0 
-	CALL s1 
-	ALOAD s0 SPILLEDARG 0 
-	ALOAD s1 SPILLEDARG 1 
-END \\End of function MAIN
-
-Factorial_main_27 [2] [2] [2] 
-	ASTORE SPILLEDARG 0 s0 
-	ASTORE SPILLEDARG 1 s1 
-	CALL FacConstructor_12C0 
-	MOVE s0 v0 
-	MOVE t0 LT s0 1 
-	CJUMP t0 L0NULL 
-	ERROR 
-L0NULL 
-	HLOAD t0 s0 0 
-	HLOAD s1 t0 0 
-	MOVE t0 10 
-	MOVE a0 s0 
-	MOVE a1 t0 
-	CALL s1 
+MAIN [0] [0] [2] 
+	MOVE t0 HALLOCATE 4 
+	MOVE t1 HALLOCATE 4 
+	MOVE t2 Fac_ComputeFac 
+	HSTORE t0 0 t2 
+	HSTORE t1 0 t0 
+	MOVE t0 t1 
+	HLOAD t1 t0 0 
+	HLOAD t1 t1 0 
+	MOVE t2 10 
+	MOVE a0 t0 
+	MOVE a1 t2 
+	CALL t1 
 	MOVE t0 v0 
 	PRINT t0 
-	MOVE v0 0 
-	ALOAD s0 SPILLEDARG 0 
-	ALOAD s1 SPILLEDARG 1 
-END \\End of function Factorial_main_27
+END //End of function MAIN
 
-Fac_ComputeFac_28 [2] [3] [2] 
-	ASTORE SPILLEDARG 1 s0 
-	ASTORE SPILLEDARG 2 s1 
+Fac_ComputeFac [2] [1] [2] 
+	ASTORE SPILLEDARG 0 s0 
 	MOVE t0 a0 
-	ASTORE SPILLEDARG 0 a1 
-	ALOAD v0 SPILLEDARG 0 
-	MOVE t0 LT v0 1 
-	CJUMP t0 L1ELSE 
+	MOVE s0 a1 
+	MOVE t1 1 
+	MOVE t1 LT s0 t1 
+	CJUMP t1 L2 
 	MOVE t0 1 
-	JUMP L1ENDIF 
-L1ELSE 
-	MOVE s0 t0 
-	MOVE t0 LT s0 1 
-	CJUMP t0 L2NULL 
-	ERROR 
-L2NULL 
-	HLOAD t0 s0 0 
-	HLOAD s1 t0 0 
-	ALOAD v0 SPILLEDARG 0 
-	MOVE t0 MINUS v0 1 
-	MOVE a0 s0 
-	MOVE a1 t0 
-	CALL s1 
+	JUMP L3 
+L2 
+	NOOP 
+	MOVE t0 t0 
+	HLOAD t1 t0 0 
+	HLOAD t1 t1 0 
+	MOVE t2 1 
+	MOVE t2 MINUS s0 t2 
+	MOVE a0 t0 
+	MOVE a1 t2 
+	CALL t1 
 	MOVE t0 v0 
-	ALOAD v0 SPILLEDARG 0 
-	MOVE t0 TIMES v0 t0 
+	MOVE t0 TIMES s0 t0 
+	MOVE t0 t0 
+L3 
 	NOOP 
-L1ENDIF 
-	NOOP 
-	MOVE v0 t0 
-	ALOAD s0 SPILLEDARG 1 
-	ALOAD s1 SPILLEDARG 2 
-END \\End of function Fac_ComputeFac_28
-
-FactorialConstructor_11C0 [0] [1] [0] 
-	ASTORE SPILLEDARG 0 s0 
-	MOVE t0 HALLOCATE 4 
-	MOVE s0 HALLOCATE 4 
-	MOVE t0 Factorial_main_27 
-	HSTORE s0 0 t0 
-	HSTORE t0 0 s0 
 	MOVE v0 t0 
 	ALOAD s0 SPILLEDARG 0 
-END \\End of function FactorialConstructor_11C0
-
-FacConstructor_12C0 [0] [1] [0] 
-	ASTORE SPILLEDARG 0 s0 
-	MOVE t0 HALLOCATE 4 
-	MOVE s0 HALLOCATE 4 
-	MOVE t0 Fac_ComputeFac_28 
-	HSTORE s0 0 t0 
-	HSTORE t0 0 s0 
-	MOVE v0 t0 
-	ALOAD s0 SPILLEDARG 0 
-END \\End of function FacConstructor_12C0
-
-intConstructor_14C0 [1] [2] [0] 
-	ASTORE SPILLEDARG 0 s0 
-	ASTORE SPILLEDARG 1 s1 
-	MOVE s0 a0 
-	MOVE t0 LT s0 0 
-	CJUMP t0 L3OFFSLTZERO 
-	ERROR 
-L3OFFSLTZERO 
-	MOVE s1 HALLOCATE 8 
-	HSTORE s1 0 s0 
-	MOVE t0 4 
-	MOVE t0 TIMES t0 s0 
-	MOVE t0 HALLOCATE t0 
-	HSTORE s1 4 t0 
-	MOVE v0 s1 
-	ALOAD s0 SPILLEDARG 0 
-	ALOAD s1 SPILLEDARG 1 
-END \\End of function intConstructor_14C0
+END //End of function Fac_ComputeFac
 
