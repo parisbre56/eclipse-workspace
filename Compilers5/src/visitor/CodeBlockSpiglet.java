@@ -127,11 +127,11 @@ public class CodeBlockSpiglet {
 					//Add it to the list of live vars and note the change
 					blk.liveVars.put(entrLiv.getKey(), entrLiv.getValue());
 					changeOccurred = true;
-					//If this is a block that contains a call, then make sure to mark these vars
-					//so that they aren't assigned to temp registers
-					if(blk.containsProcCall) {
-						entrLiv.getValue().procCallInterjected=true;
-					}
+				}
+				//If this is a block that contains a call, then make sure to mark these vars
+				//so that they aren't assigned to temp registers
+				if(blk.containsProcCall) {
+					entrLiv.getValue().procCallInterjected=true;
 				}
 			}
 		}

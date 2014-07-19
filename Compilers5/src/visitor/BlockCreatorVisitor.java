@@ -421,7 +421,7 @@ public class BlockCreatorVisitor implements Visitor {
 			currProc.varData.put(varName, varData);
 		}
 		else {
-			 varData = currProc.varData.get(varName);
+			varData = currProc.varData.get(varName);
 		}
 		return varData;
 	}
