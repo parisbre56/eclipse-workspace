@@ -1,13 +1,22 @@
 /**
  * 
  */
-package node_main;
+package node;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import node.threads.DataRetrieverThread;
+import node.threads.DataSenderThread;
+import node.threads.IdentificationThread;
+import node.threads.InterfaceCheckerThread;
+import node.threads.ShutdownHookThread;
 import exceptions.NTMonException;
 import exceptions.NTMonIAddrException;
 
@@ -17,15 +26,50 @@ import exceptions.NTMonIAddrException;
  *
  */
 public class Node_Main {
+	//Shared data
 	static public ConfigClass configClass = null;
 	
+	//Shared data for the identification thread
 	static public AtomicBoolean identificationReady = null;
 	static public AtomicBoolean identificationFailed = null;
-	Exception identificationFailedReason = null;
+	static public Exception identificationFailedReason = null;
 	
+	//Shared data for the data sender thread
+	public static AtomicBoolean senderReady = null;
+	public static AtomicBoolean senderFailed = null;
+	static public Exception senderFailedReason = null;
+	
+	//Shared exit data
+	static public AtomicBoolean exiting = null;
+	
+	//Shared thread data
+	/** Keeps a list of all the threads that ever ran in the system.<br>
+	 * Threads should try to remove themselves at exit.<br>
+	 * Periodic checks should be made if possible to ensure that any dead threads are removed to save memory.
+	 */
+	static public CopyOnWriteArrayList<Thread> threads = null;
+	
+	//Shared connection data
+	/** Remember that all uses of this object should be synchronized. <br>
+	 * Remember to send a refresh connection request before each communication attempt
+	 * to ensure that the server knows with which client it is talking to.
+	 */
+	public static Socket accumulatorConnection = null;
+	public static DataOutputStream os = null;
+	public static DataInputStream is = null;
+	
+	//Shared arguments
+	static public List<String> argList = null;
+	
+	//Shared config file location
+	public static File configFile = null;
+
+	//(Statistic) Malicious Pattern Shared Memory
+	public static SharedMemory sharedMemory = null;
 	
 	//Definitions
-	private static final Integer defaultTimeout = 50;
+	public static final Integer defaultTimeout = 50;
+	public static final int maxRetries = 3;
 	
 
 	/**
@@ -40,6 +84,13 @@ public class Node_Main {
 		identificationReady = new AtomicBoolean(false);
 		identificationFailed = new AtomicBoolean(false);
 		
+		senderReady = new AtomicBoolean(false);
+		senderFailed = new AtomicBoolean(false);
+		
+		exiting = new AtomicBoolean(false);
+		
+		threads = new CopyOnWriteArrayList<Thread>();
+		
 		// TODO Set up any data necessary
 	}
 
@@ -50,40 +101,71 @@ public class Node_Main {
 		//Start checking arguments and load configuration file
 		useArgsForConfig(args);
 		
-		// TODO Check/collect data
+		//Add shutdown hook that waits for all operations to finish
+		Runtime.getRuntime().addShutdownHook(new Thread(null, new ShutdownHookThread(), "Shutdown Hook Thread"));
+		
+		//Start the identification thread.
+		threads.add(new Thread(null, new IdentificationThread(), "Identification Thread"));
+		threads.get(threads.size()-1).run();
 		
 		// Wait for the all clear from the identification thread.
-		
-		synchronized(identificationReady) {
-			while(identificationReady.get()==false) {
+		while(identificationReady.get()==false) {
+			synchronized(identificationReady) {
 				try {
-					identificationReady.wait(defaultTimeout);
+					identificationReady.wait(defaultTimeout*1000);
 				} catch (InterruptedException e) {
 					System.err.println("DEBUG: Interrupted while waiting for the identification thread.");
 					e.printStackTrace();
 				}
 				if(identificationFailed.get()==true) {
-					System.err.println("ERROR: Identification thread failed.");
+					System.err.println("ERROR: Identification thread failed. Exiting...");
+					exiting.set(true);
+					exiting.notifyAll();
 					return;
 				}
 			}
 		}
 		
-		// TODO Start data retriever thread once the above has started successfully 
-		//	and make sure it stays running.
-		// Have it retrieve the malicious IPs and strings periodically
+		//Start the data sender thread
+		threads.add(new Thread(null, new DataSenderThread(), "Data Sender Thread"));
+		threads.get(threads.size()-1).run();
 		
-		// TODO Start data sender thread once the above has started successfully and make sure it 
-		//	sends statistics to the accumulator periodically.
+		//Wait for the all clear from the data sender thread
+		while(senderReady.get()==false) {
+			synchronized(senderReady) {
+				try {
+					senderReady.wait(defaultTimeout*1000);
+				} catch (InterruptedException e) {
+					System.err.println("DEBUG: Interrupted while waiting for the identification thread.");
+					e.printStackTrace();
+				}
+				if(senderFailed.get()==true) {
+					System.err.println("ERROR: Identification thread failed. Exiting...");
+					exiting.set(true);
+					exiting.notifyAll();
+					return;
+				}
+			}
+		}
 		
-		// TODO Start interface checker thread and make sure it stays running
-		// Also make sure that it adds the necessary data for statistics
-		// Also make sure that it removes that data if the interface is removed
-		// Also make sure it starts a thread that monitors traffic for malicious stuff and updates the statistics
-		//Make it into a separate class? Runnable?
+		//Start the data retriever thread
+		threads.add(new Thread(null, new DataRetrieverThread(), "Data Retriever Thread"));
+		threads.get(threads.size()-1).run();
 		
-		// TODO Make it periodically check that all threads are running normally?
+		//Start the interface checker thread.
+		threads.add(new Thread(null, new InterfaceCheckerThread(), "Interface Checker Thread"));
+		threads.get(threads.size()-1).run();
 		
+		//Add self to thread list
+		threads.add(Thread.currentThread());
+		
+		// TODO Make this periodically check that all threads are running normally?
+		
+		Node_Main.threads.remove(Thread.currentThread());
+		synchronized(Node_Main.threads) {
+			Node_Main.threads.notifyAll();
+		}
+		return;
 	}
 
 	/**
@@ -91,7 +173,7 @@ public class Node_Main {
 	 * @param args
 	 */
 	private static void useArgsForConfig(String[] args) {
-		List<String> argList = Arrays.asList(args);
+		argList = Arrays.asList(args);
 		
 		//Check for accumulator address flag
 		String accumulatorAddress = null;
@@ -190,5 +272,13 @@ public class Node_Main {
 		
 		// TODO Set config data
 	}
+
+	public static void refreshConnectionRequest() {
+		//TODO refresh connection
+		//Handle connection closed
+		
+	}
+	
+	
 
 }

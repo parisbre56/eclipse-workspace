@@ -3,6 +3,7 @@
 	<name>Net_Traffic_Monitor</name>
 	<comment></comment>
 	<projects>
+		<project>jnetpcap-src-1.4.r1425-1</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
