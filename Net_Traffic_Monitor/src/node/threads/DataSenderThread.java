@@ -21,7 +21,7 @@ public class DataSenderThread implements Runnable {
 	 * 
 	 */
 	public DataSenderThread() {
-		// TODO Auto-generated constructor stub
+		//Nothing to initialize
 	}
 
 	/* (non-Javadoc)
@@ -51,6 +51,7 @@ public class DataSenderThread implements Runnable {
 			}
 			synchronized(Node_Main.accumulatorConnection) {
 				//Get a copy of SMPSM
+				//TODO change this to make it use a cheaper data structure?
 				localCopy = new SharedMemory(Node_Main.sharedMemory);
 				try{
 					Node_Main.refreshConnectionRequest();
@@ -76,21 +77,25 @@ public class DataSenderThread implements Runnable {
 	}
 
 	/** Protocol is:
-	 * send DATA_INCOMING_NOTIFICATION<br>
-	 * for each interface<br>
-	 *		send INTERFACE_DECLARATION<br>
-	 *		send name<br>
-	 *		send ip<br>
-	 *		for each malicious ip or string in MPSM<br>
-	 *			send MALICIOUS_IP/STRING_ACTIVITY<br>
-	 *			send ip/string<br>
-	 *			send frequency<br>
-	 * 	send END_OF_DATA
+	 *	send DATA_INCOMING_NOTIFICATION<br>
+	 *	for each interface<br>
+	 *		-send INTERFACE_DECLARATION<br>
+	 *		-send active/inactive (boolean)<br>
+	 *		-send name (size int,string as byte array)<br>
+	 *		-for each ip this interface has had a detection event for<br>
+	 *			--send INTERFACE_IP_DECLARATION<br>
+	 *			--send interface ip (size int, ip(NOT STRING) as byte array)<br>
+	 *			--for each malicious ip or string for this ip of this interface that is active<br>
+	 *				---send MALICIOUS_IP/STRING_ACTIVITY<br>
+	 *				---send ip/string (size int,string as byte array)<br>
+	 *				---send frequency<br>
+	 *	send END_OF_DATA
 	 * @throws IOException
 	 * @throws NTMonException
 	 */
 	private void sendData() throws IOException, NTMonException {
 		Node_Main.os.writeInt(StatusCode.DATA_INCOMING_NOTIFICATION.ordinal());
+		//this.localCopy
 		//TODO finish this
 	}
 

@@ -249,6 +249,7 @@ public class Node_Main {
 				configClass.setAccumulatorAddress(accumulatorAddress);
 			}
 			catch (NTMonIAddrException e) {
+				e.printStackTrace();
 				System.err.println("ERROR: Unable to find an IP for host "+accumulatorAddress+" "
 						+ "The default will be used instead.");
 			}
@@ -265,14 +266,20 @@ public class Node_Main {
 					configClass.setAccumulatorPort(tempPort);
 				}
 			}
-			catch (NumberFormatException e) {
-				System.err.println("ERROR: \'"+accumulatorPort+"\' is not a valid port number.");
+			catch (Exception e) {
+				e.printStackTrace();
+				System.err.println("ERROR: \'"+accumulatorPort+"\' is not a valid port number. "
+						+ "The default will be used instead.");
 			}
 		}
 		
 		// TODO Set config data
 	}
 
+	/** Sends a refresh request to the server, to ensure that everything is OK with the connection. 
+	 * If the connection is closed, an attempt will be made to reopen it.
+	 * Used by all threads before communication.
+	 */
 	public static void refreshConnectionRequest() {
 		//TODO refresh connection
 		//Handle connection closed

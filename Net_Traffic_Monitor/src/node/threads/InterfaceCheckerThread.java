@@ -3,8 +3,6 @@
  */
 package node.threads;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedList;
 
 import node.Node_Main;
@@ -33,8 +31,10 @@ public class InterfaceCheckerThread implements Runnable {
 		LinkedList<PcapIf> newList = new LinkedList<PcapIf>();
 		StringBuilder errorStr = new StringBuilder(); 
 		while(Node_Main.exiting.get()==false) {
-			if(Pcap.findAllDevs(newList, errorStr)<0) {
-				System.err.println("ERROR: Unable to retrieve devices.");
+			errorStr.setLength(0);
+			if(Pcap.findAllDevs(newList, errorStr)!=Pcap.OK) {
+				System.err.println("ERROR: Unable to retrieve interfaces. Reason: "+errorStr);
+				continue;
 			}
 			//Start searching through the new list for additions
 			for(PcapIf newIf : newList) {
@@ -63,22 +63,6 @@ public class InterfaceCheckerThread implements Runnable {
 			Node_Main.threads.notifyAll();
 		}
 		return;
-	}
-
-	private boolean containsPcapIf(LinkedList<PcapIf> oldList, PcapIf newIf) {
-		Boolean retVal = false;
-		for(PcapIf oldIf : oldList) {
-			try {
-				if(oldIf.getName().equals(newIf.getName())&&Arrays.equals(oldIf.getHardwareAddress(),newIf.getHardwareAddress())) {
-					retVal=true;
-					break;
-				}
-			} catch (IOException e) {
-				System.err.println("ERROR: IOException while trying to get device's hardware address");
-				e.printStackTrace();
-			}
-		}
-		return retVal;
 	}
 
 }

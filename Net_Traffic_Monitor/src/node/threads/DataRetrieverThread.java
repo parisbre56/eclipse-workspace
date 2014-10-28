@@ -101,16 +101,16 @@ public class DataRetrieverThread implements Runnable {
 	}
 
 	/** This processes data sent by the server after either a DATA_DIFF_REQUEST or an ALL_DATA_REQUEST.<br>
-	 * Protocol is:
-	 * read some_DATA_REQUEST
-	 * while(response!=END_OF_DATA)
-	 * 		if (CLEAR_MEMORY_REQUEST)
-	 * 			clear memory
-	 * 		else (MALICIOUS_IP_ADDITION || MALICIOUS_STRING_ADDITION || MALICIOUS_IP_REMOVAL || MALICIOUS_STRING_REMOVAL)
-	 * 			read data length
-	 * 			read data and add them to memory
-	 * 		else
-	 * 			error
+	 * Protocol is:<br>
+	 * read some_DATA_REQUEST<br>
+	 * while(response!=END_OF_DATA)<br>
+	 * 		if (CLEAR_MEMORY_REQUEST)<br>
+	 * 			clear memory<br>
+	 * 		else (MALICIOUS_IP_ADDITION || MALICIOUS_STRING_ADDITION || MALICIOUS_IP_REMOVAL || MALICIOUS_STRING_REMOVAL)<br>
+	 * 			read data length<br>
+	 * 			read data and add them to memory<br>
+	 * 		else<br>
+	 * 			error<br>
 	 * @throws IOException 
 	 * @throws NTMonException 
 	 */
