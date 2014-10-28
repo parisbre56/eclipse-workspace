@@ -6,6 +6,8 @@ package node;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import node.sharedMemory.SharedMemory;
+
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.Payload;
 import org.jnetpcap.packet.PcapPacket;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package node;
+package node.sharedMemory;
 
 /**
  * @author Parisbre56
@@ -64,6 +64,20 @@ public class DetectionFrequencyString extends DetectionFrequency {
 			System.err.println("DEBUG: Super called for a DetectionFrequencyString object's equals method.");
 			return super.equals(object);
 		}
+	}
+
+	/**
+	 * @return The pattern string of this event
+	 */
+	public String getPatternString() {
+		return this.match.pattern;
+	}
+	
+	/**
+	 * @return Whether or not this pattern is currently marked as active
+	 */
+	public Boolean patternIsActive() {
+		return this.match.active.get();
 	}
 
 	

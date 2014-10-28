@@ -10,9 +10,12 @@ import java.net.Socket;
 
 import node.Node_Main;
 import exceptions.NTMonException;
+import exceptions.NTMonUnableToRefreshException;
 import shared_data.StatusCode;
 
-/**
+/** First sends an identification request. Keeps trying until it finds an identity it can register with.<br>
+ * Then sends the refresh rate.<br>
+ * Finally waits until all other threads (except this one) have exited to send the exit signal to the server.<br>
  * @author Parisbre56
  *
  */
@@ -97,32 +100,28 @@ public class IdentificationThread implements Runnable {
 						nameConflictCounter+=1;
 						continue;
 					}
-					//If there was some kind of other problem we can't handle, fail
-					else {
-						System.err.println("ERROR: Received signal "+response.toString()+":"
-								+StatusCode.values()[response].toString()+" from the accumulator while "
-										+ "trying to register.");
-						Node_Main.identificationFailedReason=new NTMonException("ERROR: Received signal "
-								+response.toString()+":"
-								+StatusCode.values()[response].toString()+" from the accumulator while "
-								+ "trying to register.");
-						Node_Main.identificationFailed.set(true);
-						synchronized(Node_Main.identificationReady) {
-							Node_Main.identificationReady.notifyAll();
-						}
-						Node_Main.accumulatorConnection.close();
-						Node_Main.threads.remove(Thread.currentThread());
-						synchronized(Node_Main.threads) {
-							Node_Main.threads.notifyAll();
-						}
-						return;
+					//Else if there was some kind of other problem we can't handle, fail
+					System.err.println("ERROR: Received signal "+response.toString()+":"
+							+StatusCode.values()[response].toString()+" from the accumulator while "
+									+ "trying to register.");
+					Node_Main.identificationFailedReason=new NTMonException("ERROR: Received signal "
+							+response.toString()+":"
+							+StatusCode.values()[response].toString()+" from the accumulator while "
+							+ "trying to register.");
+					Node_Main.identificationFailed.set(true);
+					synchronized(Node_Main.identificationReady) {
+						Node_Main.identificationReady.notifyAll();
 					}
+					Node_Main.accumulatorConnection.close();
+					Node_Main.threads.remove(Thread.currentThread());
+					synchronized(Node_Main.threads) {
+						Node_Main.threads.notifyAll();
+					}
+					return;
 				}
 				//If successful, change the Id in the settings and continue out of the loop
-				else {
-					Node_Main.configClass.setId(tempName);
-					break;
-				}
+				Node_Main.configClass.setId(tempName);
+				break;
 			}
 		} catch (IOException e) {
 			System.err.println("ERROR: Exception while trying to register with the accumulator.");
@@ -163,17 +162,20 @@ public class IdentificationThread implements Runnable {
 					if(response==StatusCode.ALL_CLEAR.ordinal()) {
 						break;
 					}
-					else {
-						System.err.println("ERROR: Received signal "
-								+response.toString()+":"
-								+StatusCode.values()[response].toString()+" from the accumulator while "
-								+ "trying to send refresh rate.");
-					}
+					//Else if there was a problem
+					System.err.println("ERROR: Received signal "
+							+response.toString()+":"
+							+StatusCode.values()[response].toString()+" from the accumulator while "
+							+ "trying to send refresh rate.");
 				}
 			}
 			catch (IOException e) {
 				System.err.println("ERROR: Exception while trying to send the refresh rate to the accumulator.");
 				e.printStackTrace();
+			} catch (NTMonUnableToRefreshException e) {
+				System.err.println("ERROR: Fatal exception occured. Giving up on sending refresh rate.");
+				e.printStackTrace();
+				break;
 			}
 			//Try to clear input stream
 			try {
@@ -206,14 +208,16 @@ public class IdentificationThread implements Runnable {
 		//to ensure that all data is written first
 		//then send the appropriate message to the server and exit.
 		for(Thread toJoin : Node_Main.threads) {
-			Boolean joined=false;
-			while(joined==false) {
-				try {
-					toJoin.join();
-					joined=true;
-				} catch (InterruptedException e) {
-					System.err.println("DEBUG: Interrupted while waiting for the other threads to exit.");
-					e.printStackTrace();
+			if(toJoin.equals(Thread.currentThread())) {
+				Boolean joined=false;
+				while(joined==false) {
+					try {
+						toJoin.join();
+						joined=true;
+					} catch (InterruptedException e) {
+						System.err.println("DEBUG: Interrupted while waiting for the other threads to exit.");
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -246,6 +250,10 @@ public class IdentificationThread implements Runnable {
 						System.err.println("ERROR: Max retries exceeded. Giving up on sending exit signal.");
 						break;
 					}
+				} catch (NTMonUnableToRefreshException e) {
+					System.err.println("ERROR: Fatal exception occured. Giving up on sending exit signal.");
+					e.printStackTrace();
+					break;
 				}
 			}
 		}

@@ -1,8 +1,9 @@
 /**
  * 
  */
-package node;
+package node.sharedMemory;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -117,6 +118,13 @@ public class SMPSM {
 		if(index>=0) {
 			this.interfaceStatistics.get(index).addStringEventCollection(collection,currIf);
 		}	
+	}
+
+	/**
+	 * @return An iterator over the interfaces contained in the memory
+	 */
+	public Iterator<InterfaceStatistics> getInterfacesIterator() {
+		return this.interfaceStatistics.iterator();
 	}
 
 }

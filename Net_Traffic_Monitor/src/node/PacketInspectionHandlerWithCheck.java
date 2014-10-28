@@ -3,6 +3,8 @@
  */
 package node;
 
+import node.sharedMemory.SharedMemory;
+
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacket;

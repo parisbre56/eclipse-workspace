@@ -1,10 +1,11 @@
 /**
  * 
  */
-package node;
+package node.sharedMemory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -181,6 +182,13 @@ public class InterfaceStatistics {
 			System.err.println("DEBUG: Super called for an InterfaceStatistics object's equals method.");
 			return super.equals(obj);
 		}
+	}
+
+	/**
+	 * @return An iterator over all the addresses for this interface. Remember to check for name==null
+	 */
+	public Iterator<InterfaceAddressStats> getAddressIterator() {
+		return this.interfaceAdressesStats.iterator();
 	}
 	
 	

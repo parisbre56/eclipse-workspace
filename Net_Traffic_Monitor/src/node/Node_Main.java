@@ -6,12 +6,15 @@ package node;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import shared_data.StatusCode;
+import node.sharedMemory.SharedMemory;
 import node.threads.DataRetrieverThread;
 import node.threads.DataSenderThread;
 import node.threads.IdentificationThread;
@@ -19,6 +22,7 @@ import node.threads.InterfaceCheckerThread;
 import node.threads.ShutdownHookThread;
 import exceptions.NTMonException;
 import exceptions.NTMonIAddrException;
+import exceptions.NTMonUnableToRefreshException;
 
 /**
  * REMEMBER! ALL INTERVALS ARE IN SECONDS!
@@ -40,7 +44,12 @@ public class Node_Main {
 	static public Exception senderFailedReason = null;
 	
 	//Shared exit data
+	/** Indicates that the program is in the process of exiting.
+	 */
 	static public AtomicBoolean exiting = null;
+	/** Indicates that the exiting variable has been set due to a fatal exception.
+	 */
+	private static AtomicBoolean exitingException = null;
 	
 	//Shared thread data
 	/** Keeps a list of all the threads that ever ran in the system.<br>
@@ -50,12 +59,17 @@ public class Node_Main {
 	static public CopyOnWriteArrayList<Thread> threads = null;
 	
 	//Shared connection data
-	/** Remember that all uses of this object should be synchronized. <br>
+	/** The connection to the server.<br>
+	 * Remember that all uses of this object should be synchronized. <br>
 	 * Remember to send a refresh connection request before each communication attempt
 	 * to ensure that the server knows with which client it is talking to.
 	 */
 	public static Socket accumulatorConnection = null;
+	/** Output stream for the server.<br> Make sure to synchronize on accumulatorConnection.
+	 */
 	public static DataOutputStream os = null;
+	/** Input stream for the server.<br> Make sure to synchronize on accumulatorConnection.
+	 */
 	public static DataInputStream is = null;
 	
 	//Shared arguments
@@ -88,8 +102,9 @@ public class Node_Main {
 		senderFailed = new AtomicBoolean(false);
 		
 		exiting = new AtomicBoolean(false);
+		exitingException = new AtomicBoolean(false);
 		
-		threads = new CopyOnWriteArrayList<Thread>();
+		threads = new CopyOnWriteArrayList<>();
 		
 		// TODO Set up any data necessary
 	}
@@ -276,14 +291,87 @@ public class Node_Main {
 		// TODO Set config data
 	}
 
-	/** Sends a refresh request to the server, to ensure that everything is OK with the connection. 
-	 * If the connection is closed, an attempt will be made to reopen it.
-	 * Used by all threads before communication.
+	/** Sends a refresh request to the server, to ensure that everything is OK with the connection.<br> 
+	 * If there is a fatal error, the program starts its exit sequence and throws NTMonUnableToRefreshException!!!<br>
+	 * If the connection is closed, an attempt will be made to reopen it. 
+	 * If it is unable to do so, it will initiate the exit sequence.<br>
+	 * Used by all threads before communication. <br>
+	 * NOT synchronized as the caller should had already done that.<br>
+	 * @throws NTMonUnableToRefreshException If there was a fatal problem with the connection. The program will no EXIT.
+	 * @throws IOException If there was a non-fatal communication exception
 	 */
-	public static void refreshConnectionRequest() {
-		//TODO refresh connection
-		//Handle connection closed
+	public static void refreshConnectionRequest() throws NTMonUnableToRefreshException, IOException {
+		//No reason to continue if exiting due to an error.
+		if(exitingException.get()) {
+			throw new NTMonUnableToRefreshException();
+		}
+		//First checks whether or not the connection is open
+		if(accumulatorConnection.isClosed() ||
+				accumulatorConnection.isInputShutdown()||accumulatorConnection.isOutputShutdown()) {
+			System.err.println("ERROR: Connection closed.");
+			Boolean success=false;
+			for(Integer i = 0 ; i<configClass.getReconnectAttempts() ; ++i)
+			{
+				System.err.println("DEBUG: Attempting to recconect.");
+				try {
+					Node_Main.accumulatorConnection = new Socket(Node_Main.configClass.getAccumulatorAddress(),
+							Node_Main.configClass.getAccumulatorPort());
+				} catch (IOException e) {
+					System.err.println("ERROR: Unable to reconnect to server.");
+					e.printStackTrace();
+					continue;
+				}
+				try {
+					Node_Main.os = new DataOutputStream(Node_Main.accumulatorConnection.getOutputStream());
+					Node_Main.is = new DataInputStream(Node_Main.accumulatorConnection.getInputStream());
+				} catch (IOException e) {
+					System.err.println("ERROR: Unable to open data stream to server.");
+					e.printStackTrace();
+					continue;
+				}
+				if(accumulatorConnection.isClosed() ||
+						accumulatorConnection.isInputShutdown()||accumulatorConnection.isOutputShutdown()) {
+					continue;
+				}
+				success=true;
+				break;
+			}
+			//If there was a problem with reconnecting
+			if(!success) {
+				System.err.println("ERROR: Unable to reconnect. Max retries ("
+						+configClass.getReconnectAttempts()+") exceeded. Exiting...");
+				exitingException.set(true);
+				exiting.set(true);
+				synchronized(exiting) {
+					exiting.notifyAll();
+				}
+				throw new NTMonUnableToRefreshException();
+			}
+		}
+		//Try to clear input stream
+		try {
+			Node_Main.is.skip(Long.MAX_VALUE);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//Send refresh request
+		os.writeInt(StatusCode.REFRESH_REQUEST.ordinal());
+		os.writeInt(configClass.getId().getBytes().length);
+		os.write(configClass.getId().getBytes());
+		//Read response
+		Integer response = is.readInt();
 		
+		if(response!=StatusCode.ALL_CLEAR.ordinal()) {
+			System.err.println("ERROR: Refresh connection attempt failed. "
+					+ "Server gave response status code "+StatusCode.values()[response].toString());
+			System.err.println("ERROR: Exiting...");
+			exitingException.set(true);
+			exiting.set(true);
+			synchronized(exiting) {
+				exiting.notifyAll();
+			}
+			throw new NTMonUnableToRefreshException();
+		}
 	}
 	
 	

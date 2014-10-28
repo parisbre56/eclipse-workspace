@@ -1,9 +1,10 @@
 /**
  * 
  */
-package node;
+package node.sharedMemory;
 
 import java.net.InetAddress;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.jnetpcap.PcapIf;
@@ -130,6 +131,14 @@ public class SharedMemory {
 		if(collection.size()>0) {
 			this.smpsm.addStringEventCollection(collection,currIf);
 		}
+	}
+
+	
+	/**
+	 * @return An iterator over the interface statistics contained in this memory
+	 */
+	public Iterator<InterfaceStatistics> getInterfacesIterator() {
+		return this.smpsm.getInterfacesIterator();
 	}
 
 }

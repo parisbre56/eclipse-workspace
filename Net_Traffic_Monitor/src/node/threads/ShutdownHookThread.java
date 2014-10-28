@@ -18,7 +18,7 @@ public class ShutdownHookThread implements Runnable {
 	 * 
 	 */
 	public ShutdownHookThread() {
-		// TODO Auto-generated constructor stub
+		//Nothing to initialize
 	}
 
 	/* (non-Javadoc)

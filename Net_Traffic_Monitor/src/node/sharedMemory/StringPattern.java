@@ -1,7 +1,7 @@
 /**
  * 
  */
-package node;
+package node.sharedMemory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

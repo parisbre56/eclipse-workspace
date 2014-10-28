@@ -1,9 +1,10 @@
 /**
  * 
  */
-package node;
+package node.sharedMemory;
 
 import java.net.InetAddress;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -121,5 +122,26 @@ public class InterfaceAddressStats {
 			System.err.println("DEBUG: Super called for an InterfaceAddressStats object's equals method.");
 			return super.equals(obj);
 		}
+	}
+
+	/**
+	 * @return The address of the interface the capture was made on. Null means no address available.
+	 */
+	public InetAddress getAddress() {
+		return this.addr;
+	}
+
+	/**
+	 * @return An iterator over all the ip events for this address of this interface
+	 */
+	public Iterator<DetectionFrequencyString> getIpEventIterator() {
+		return this.detectionIpFrequencies.iterator();
+	}
+
+	/**
+	 * @return An iterator over all the string pattern events for this address of this interface
+	 */
+	public Iterator<DetectionFrequencyString> getStringEventIterator() {
+		return this.detectionStringFrequencies.iterator();
 	}
 }

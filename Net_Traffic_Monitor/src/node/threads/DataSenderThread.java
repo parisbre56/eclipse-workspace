@@ -4,11 +4,16 @@
 package node.threads;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Iterator;
 
 import node.Node_Main;
-import node.SharedMemory;
+import node.sharedMemory.DetectionFrequencyString;
+import node.sharedMemory.InterfaceAddressStats;
+import node.sharedMemory.InterfaceStatistics;
+import node.sharedMemory.SharedMemory;
 import shared_data.StatusCode;
-import exceptions.NTMonException;
+import exceptions.NTMonUnableToRefreshException;
 
 /**
  * @author Parisbre56
@@ -52,7 +57,7 @@ public class DataSenderThread implements Runnable {
 			synchronized(Node_Main.accumulatorConnection) {
 				//Get a copy of SMPSM
 				//TODO change this to make it use a cheaper data structure?
-				localCopy = new SharedMemory(Node_Main.sharedMemory);
+				this.localCopy = new SharedMemory(Node_Main.sharedMemory);
 				try{
 					Node_Main.refreshConnectionRequest();
 					sendData();
@@ -61,11 +66,14 @@ public class DataSenderThread implements Runnable {
 					System.err.println("ERROR: Exception while trying to send data. Will retry in "+
 							Node_Main.configClass.getRefreshRate()+" seconds.");
 					e.printStackTrace();
-				} catch (NTMonException e) {
+				} catch (NTMonUnableToRefreshException e) {
+					e.printStackTrace();
+					return;
+				} /*catch (NTMonException e) {
 					System.err.println("ERROR: Unknown signal while trying to send data. Will retry in "+
 							Node_Main.configClass.getRefreshRate()+" seconds.");
 					e.printStackTrace();
-				}
+				}*/
 			}
 		}
 		
@@ -80,23 +88,77 @@ public class DataSenderThread implements Runnable {
 	 *	send DATA_INCOMING_NOTIFICATION<br>
 	 *	for each interface<br>
 	 *		-send INTERFACE_DECLARATION<br>
-	 *		-send active/inactive (boolean)<br>
 	 *		-send name (size int,string as byte array)<br>
+	 *		-send active/inactive (boolean)<br>
 	 *		-for each ip this interface has had a detection event for<br>
-	 *			--send INTERFACE_IP_DECLARATION<br>
-	 *			--send interface ip (size int, ip(NOT STRING) as byte array)<br>
+	 *			--send INTERFACE_ADDRESS_DECLARATION<br>
+	 *			--send interface ip (size int, ip(NOT STRING) as byte array) | 0 size means null<br>
 	 *			--for each malicious ip or string for this ip of this interface that is active<br>
 	 *				---send MALICIOUS_IP/STRING_ACTIVITY<br>
 	 *				---send ip/string (size int,string as byte array)<br>
 	 *				---send frequency<br>
 	 *	send END_OF_DATA
 	 * @throws IOException
-	 * @throws NTMonException
 	 */
-	private void sendData() throws IOException, NTMonException {
+	private void sendData() throws IOException/*, NTMonException*/ {
 		Node_Main.os.writeInt(StatusCode.DATA_INCOMING_NOTIFICATION.ordinal());
-		//this.localCopy
-		//TODO finish this
+		
+		//For all interfaces
+		Iterator<InterfaceStatistics> itIn = this.localCopy.getInterfacesIterator();
+		while(itIn.hasNext()) {
+			InterfaceStatistics inStats = itIn.next();
+			
+			//Declare interface
+			Node_Main.os.writeInt(StatusCode.INTERFACE_DECLARATION.ordinal());
+			Node_Main.os.writeInt(inStats.getName().getBytes().length);
+			Node_Main.os.write(inStats.getName().getBytes());
+			Node_Main.os.writeBoolean(inStats.getActive());
+			
+			//For all addresses
+			Iterator<InterfaceAddressStats> itInAd = inStats.getAddressIterator();
+			while(itInAd.hasNext()) {
+				InterfaceAddressStats inAdStats = itInAd.next();
+				
+				//Declare address
+				Node_Main.os.writeInt(StatusCode.INTERFACE_ADDRESS_DECLARATION.ordinal());
+				InetAddress inetAddr = inAdStats.getAddress();
+				if(inetAddr==null) {
+					Node_Main.os.writeInt(0);
+				}
+				else {
+					Node_Main.os.writeInt(inetAddr.getAddress().length);
+					Node_Main.os.write(inetAddr.getAddress());
+				}
+				
+				//For all ip detection events for this address that are marked as active
+				Iterator<DetectionFrequencyString> itEvent = inAdStats.getIpEventIterator();
+				while(itEvent.hasNext()) {
+					DetectionFrequencyString detIp = itEvent.next();
+					if(detIp.patternIsActive()) {
+						//Send the event and its frequency
+						Node_Main.os.writeInt(StatusCode.MALICIOUS_IP_ACTIVITY.ordinal());
+						Node_Main.os.writeInt(detIp.getPatternString().getBytes().length);
+						Node_Main.os.write(detIp.getPatternString().getBytes());
+						Node_Main.os.writeInt(detIp.getFrequency());
+					}
+				}
+				
+				//For all string detection events for this address that are marked as active
+				itEvent = inAdStats.getStringEventIterator();
+				while(itEvent.hasNext()) {
+					DetectionFrequencyString detString = itEvent.next();
+					if(detString.patternIsActive()) {
+						//Send the event and its frequency
+						Node_Main.os.writeInt(StatusCode.MALICIOUS_STRING_ACTIVITY.ordinal());
+						Node_Main.os.writeInt(detString.getPatternString().getBytes().length);
+						Node_Main.os.write(detString.getPatternString().getBytes());
+						Node_Main.os.writeInt(detString.getFrequency());
+					}
+				}
+			}
+		}
+		//No more data incoming
+		Node_Main.os.writeInt(StatusCode.END_OF_DATA.ordinal());
 	}
 
 }

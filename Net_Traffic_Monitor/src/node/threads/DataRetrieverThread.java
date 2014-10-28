@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import node.Node_Main;
 import exceptions.NTMonException;
+import exceptions.NTMonUnableToRefreshException;
 import shared_data.StatusCode;
 
 /**
@@ -43,6 +44,9 @@ public class DataRetrieverThread implements Runnable {
 				} catch (IOException e) {
 					System.err.println("ERROR: Exception during initial data retrieval.");
 					e.printStackTrace();
+				} catch (NTMonUnableToRefreshException e) {
+					e.printStackTrace();
+					return;
 				} catch (NTMonException e) {
 					System.err.println("ERROR: Unknown signal received.");
 					e.printStackTrace();
@@ -84,6 +88,9 @@ public class DataRetrieverThread implements Runnable {
 					System.err.println("ERROR: Exception while trying to retrieve data. Will retry in "+
 							Node_Main.configClass.getRefreshRate()+" seconds.");
 					e.printStackTrace();
+				} catch (NTMonUnableToRefreshException e) {
+					e.printStackTrace();
+					return;
 				} catch (NTMonException e) {
 					System.err.println("ERROR: Unknown signal while trying to retrieve data. Will retry in "+
 							Node_Main.configClass.getRefreshRate()+" seconds.");
