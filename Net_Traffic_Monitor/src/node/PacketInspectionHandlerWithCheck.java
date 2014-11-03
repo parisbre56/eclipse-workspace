@@ -3,7 +3,7 @@
  */
 package node;
 
-import node.sharedMemory.SharedMemory;
+import node.sharedMemory.Node_SharedMemory;
 
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
@@ -24,19 +24,19 @@ public class PacketInspectionHandlerWithCheck extends PacketInspectionHandler {
 	 */
 	public PacketInspectionHandlerWithCheck(Pcap pcap, PcapIf If) {
 		super(If);
-		currPcap=pcap;
+		this.currPcap=pcap;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jnetpcap.packet.PcapPacketHandler#nextPacket(org.jnetpcap.packet.PcapPacket, java.lang.Object)
 	 */
 	@Override
-	public void nextPacket(PcapPacket packet, SharedMemory user) {
+	public void nextPacket(PcapPacket packet, Node_SharedMemory user) {
 		super.nextPacket(packet,user);
 		//In addition to handling the packet, also check if the exit condition is met
 		//and if so, exit the loop.
-		if(Node_Main.exiting.get()==false || Node_Main.sharedMemory.containsPcapIf(currIf)) {
-			currPcap.breakloop();
+		if(Node_Main.exiting.get()==false || Node_Main.node_SharedMemory.containsPcapIf(this.currIf)) {
+			this.currPcap.breakloop();
 		}
 	}
 }

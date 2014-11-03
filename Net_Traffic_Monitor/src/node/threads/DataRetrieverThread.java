@@ -69,7 +69,7 @@ public class DataRetrieverThread implements Runnable {
 			//Wait refresh rate before retrying
 			try {
 				synchronized(Node_Main.exiting) {
-					Node_Main.exiting.wait(Node_Main.configClass.getRefreshRate()*1000);
+					Node_Main.exiting.wait(Node_Main.node_ConfigClass.getRefreshRate()*1000);
 				}
 			} catch (InterruptedException e) {
 				System.err.println("DEBUG: Interrupted while waiting for data retrieval.");
@@ -86,14 +86,14 @@ public class DataRetrieverThread implements Runnable {
 				}
 				catch (IOException e) {
 					System.err.println("ERROR: Exception while trying to retrieve data. Will retry in "+
-							Node_Main.configClass.getRefreshRate()+" seconds.");
+							Node_Main.node_ConfigClass.getRefreshRate()+" seconds.");
 					e.printStackTrace();
 				} catch (NTMonUnableToRefreshException e) {
 					e.printStackTrace();
 					return;
 				} catch (NTMonException e) {
 					System.err.println("ERROR: Unknown signal while trying to retrieve data. Will retry in "+
-							Node_Main.configClass.getRefreshRate()+" seconds.");
+							Node_Main.node_ConfigClass.getRefreshRate()+" seconds.");
 					e.printStackTrace();
 				}
 			}
@@ -121,47 +121,47 @@ public class DataRetrieverThread implements Runnable {
 	 * @throws IOException 
 	 * @throws NTMonException 
 	 */
-	private void processIncomingData() throws IOException, NTMonException {
-		Integer response;
+	private static void processIncomingData() throws IOException, NTMonException {
+		int response;
 		while(true) {
 			response=Node_Main.is.readInt();
 			if(response==StatusCode.END_OF_DATA.ordinal()) {
 				break;
 			}
 			else if(response==StatusCode.CLEAR_MEMORY_REQUEST.ordinal()) {
-				Node_Main.sharedMemory.clearMPSMMemory();
+				Node_Main.node_SharedMemory.clearMPSMMemory();
 			}
 			else if(response==StatusCode.MALICIOUS_IP_ADDITION.ordinal()) {
-				Integer length=Node_Main.is.readInt();
+				int length=Node_Main.is.readInt();
 				byte[] bytes = new byte[length];
 				Node_Main.is.read(bytes, 0, length);
 				String data=new String(bytes);
-				Node_Main.sharedMemory.addIP(data);
+				Node_Main.node_SharedMemory.addIP(data);
 			}
 			else if(response==StatusCode.MALICIOUS_STRING_ADDITION.ordinal()) {
-				Integer length=Node_Main.is.readInt();
+				int length=Node_Main.is.readInt();
 				byte[] bytes = new byte[length];
 				Node_Main.is.read(bytes, 0, length);
 				String data=new String(bytes);
-				Node_Main.sharedMemory.addString(data);
+				Node_Main.node_SharedMemory.addString(data);
 			}
 			else if(response==StatusCode.MALICIOUS_IP_REMOVAL.ordinal()) {
-				Integer length=Node_Main.is.readInt();
+				int length=Node_Main.is.readInt();
 				byte[] bytes = new byte[length];
 				Node_Main.is.read(bytes, 0, length);
 				String data=new String(bytes);
-				Node_Main.sharedMemory.removeIP(data);
+				Node_Main.node_SharedMemory.removeIP(data);
 			}
 			else if(response==StatusCode.MALICIOUS_STRING_REMOVAL.ordinal()) {
-				Integer length=Node_Main.is.readInt();
+				int length=Node_Main.is.readInt();
 				byte[] bytes = new byte[length];
 				Node_Main.is.read(bytes, 0, length);
 				String data=new String(bytes);
-				Node_Main.sharedMemory.removeString(data);
+				Node_Main.node_SharedMemory.removeString(data);
 			}
 			else {
 				throw new NTMonException("ERROR: Received signal "
-						+response.toString()+":"
+						+Integer.toString(response)+":"
 						+StatusCode.values()[response].toString()+" from the accumulator while "
 						+ "trying to retrieve data.");
 			}

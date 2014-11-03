@@ -13,24 +13,24 @@ import org.jnetpcap.PcapIf;
  * @author Parisbre56
  *
  */
-public class SharedMemory {
+public class Node_SharedMemory {
 	final private MPSM mpsm;
 	final private SMPSM smpsm;
 
 	/**
 	 * 
 	 */
-	public SharedMemory() {
+	public Node_SharedMemory() {
 		this.mpsm = new MPSM();
 		this.smpsm = new SMPSM();
 	}
 
 	/** Copy constructor, copies all data so that they can be altered without changing the original
-	 * @param sharedMemory The shared memory to copy
+	 * @param node_SharedMemory The shared memory to copy
 	 */
-	public SharedMemory(SharedMemory sharedMemory) {
-		this.mpsm=new MPSM(sharedMemory.mpsm);
-		this.smpsm=new SMPSM(sharedMemory.smpsm);
+	public Node_SharedMemory(Node_SharedMemory node_SharedMemory) {
+		this.mpsm=new MPSM(node_SharedMemory.mpsm);
+		this.smpsm=new SMPSM(node_SharedMemory.smpsm);
 	}
 
 	/** If the malicious string already exists in memory it will simply be marked as active

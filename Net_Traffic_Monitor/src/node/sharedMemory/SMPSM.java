@@ -44,7 +44,7 @@ public class SMPSM {
 	 * @param newIf The interface to mark as active
 	 */
 	public void addInterface(PcapIf newIf) {
-		Integer index = this.interfaceStatistics.indexOf(newIf.getName());
+		int index = this.interfaceStatistics.indexOf(newIf.getName());
 		if(index<0) {
 			this.interfaceStatistics.add(new InterfaceStatistics(newIf.getName()));
 		}
@@ -57,7 +57,7 @@ public class SMPSM {
 	 * @param oldIf The interface to mark as inactive
 	 */
 	public void removeInterface(PcapIf oldIf) {
-		Integer index = this.interfaceStatistics.indexOf(oldIf.getName());
+		int index = this.interfaceStatistics.indexOf(oldIf.getName());
 		if(index>=0) {
 			this.interfaceStatistics.get(index).setInactive();
 		}
@@ -68,7 +68,7 @@ public class SMPSM {
 	 * @return True if newIf exists and is marked as active, false otherwise
 	 */
 	public Boolean containsActivePcapIf(PcapIf newIf) {
-		Integer index = this.interfaceStatistics.indexOf(newIf.getName());
+		int index = this.interfaceStatistics.indexOf(newIf.getName());
 		if(index>=0) {
 			return this.interfaceStatistics.get(index).getActive();
 		}
@@ -102,7 +102,7 @@ public class SMPSM {
 	 * @param currIf The interface this detection occurred on
 	 */
 	public void addIpEvent(StringPattern pat, PcapIf currIf) {
-		Integer index = this.interfaceStatistics.indexOf(currIf.getName());
+		int index = this.interfaceStatistics.indexOf(currIf.getName());
 		if(index>=0) {
 			this.interfaceStatistics.get(index).addIpEvent(pat,currIf);
 		}
@@ -114,7 +114,7 @@ public class SMPSM {
 	 * @param currIf The interface the capture was made on. Used to determine the Interface's current IP.
 	 */
 	public void addStringEventCollection(LinkedList<StringPattern> collection, PcapIf currIf) {
-		Integer index = this.interfaceStatistics.indexOf(currIf.getName());
+		int index = this.interfaceStatistics.indexOf(currIf.getName());
 		if(index>=0) {
 			this.interfaceStatistics.get(index).addStringEventCollection(collection,currIf);
 		}	

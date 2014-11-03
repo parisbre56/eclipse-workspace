@@ -62,7 +62,7 @@ public class InterfaceAddressStats {
 	 * @param pat The malicious IP address that was detected.
 	 */
 	public void addIpEvent(StringPattern pat) {
-		Integer index = this.detectionStringFrequencies.indexOf(pat);
+		int index = this.detectionStringFrequencies.indexOf(pat);
 		if(index>=0) {
 			this.detectionIpFrequencies.get(index).addDetection();
 		}
@@ -78,7 +78,7 @@ public class InterfaceAddressStats {
 	 */
 	public void addStringEventCollection(LinkedList<StringPattern> collection) {
 		for(StringPattern pat : collection) {
-			Integer index = this.detectionStringFrequencies.indexOf(pat);
+			int index = this.detectionStringFrequencies.indexOf(pat);
 			if(index>=0) {
 				this.detectionStringFrequencies.get(index).addDetection();
 			}

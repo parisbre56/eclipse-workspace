@@ -8,16 +8,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import node.Node_Main;
 
-/**
+/** Simply sets the exit signal to true and waits for all registered threads to exit
  * @author Parisbre56
  *
  */
-public class ShutdownHookThread implements Runnable {
+public class Node_ShutdownHookThread implements Runnable {
 
 	/**
 	 * 
 	 */
-	public ShutdownHookThread() {
+	public Node_ShutdownHookThread() {
 		//Nothing to initialize
 	}
 
@@ -30,11 +30,6 @@ public class ShutdownHookThread implements Runnable {
 		Node_Main.exiting.set(true);
 		synchronized(Node_Main.exiting) {
 			Node_Main.exiting.notifyAll();
-		}
-		
-		//Before exiting, write the configuration file if the user asked for it, including any changes made
-		if(Node_Main.argList.contains("-wc")) {
-			Node_Main.configClass.createConfigFile(Node_Main.configFile);
 		}
 
 		//Wait for all other threads to exit
@@ -51,10 +46,11 @@ public class ShutdownHookThread implements Runnable {
 	}
 
 	/** Checks threads for live threads. Returns true if one is found
-	 * @param threads
+	 * @param threads The list of threads to check. 
+	 * No synchronization needed because we are iterating over this thread's personal copy of the list.
 	 * @return True if a live thread is found in the list, false otherwise
 	 */
-	private boolean containsLiveThreads(CopyOnWriteArrayList<Thread> threads) {
+	private static boolean containsLiveThreads(CopyOnWriteArrayList<Thread> threads) {
 		for(Iterator<Thread> it = threads.iterator(); it.hasNext() ;) {
 			Thread t = it.next();
 			if(t.isAlive()) {

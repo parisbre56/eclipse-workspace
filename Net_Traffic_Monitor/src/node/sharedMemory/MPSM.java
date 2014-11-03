@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
-/**
+/** Holds all malicious IP patterns and malicious String patterns. Fully synchronized, no need for manual synchronization.
  * @author Parisbre56
  *
  */
@@ -20,27 +20,33 @@ public class MPSM {
 	 * Removing a malicious string or IP also removes the statistics for it
 	 */
 	public MPSM() {
-		this.stringPatterns = new CopyOnWriteArrayList<StringPattern>();
-		this.ipPatterns = new CopyOnWriteArrayList<StringPattern>();
+		this.stringPatterns = new CopyOnWriteArrayList<>();
+		this.ipPatterns = new CopyOnWriteArrayList<>();
 	}
 
+	/** Creates a deep copy of the provided parameter
+	 * @param mpsm
+	 */
 	public MPSM(MPSM mpsm) {
-		this.stringPatterns=new CopyOnWriteArrayList<StringPattern>();
+		this.stringPatterns=new CopyOnWriteArrayList<>();
 		for (StringPattern sP : mpsm.stringPatterns) {
 			this.stringPatterns.add(new StringPattern(sP));
 		}
 		
-		this.ipPatterns=new CopyOnWriteArrayList<StringPattern>();
+		this.ipPatterns=new CopyOnWriteArrayList<>();
 		for (StringPattern sP : mpsm.ipPatterns) {
 			this.ipPatterns.add(new StringPattern(sP));
 		}
 	}
 
+	/**
+	 * @param data The malicious string pattern to add to memory. If it already exists, it just sets it as active.
+	 */
 	public void addString(String data) {
 		//synchronized(stringPatterns) {
-			Integer index = this.stringPatterns.indexOf(data);
+			int index = this.stringPatterns.indexOf(data);
 			if(index<0) {
-				this.stringPatterns.add(new StringPattern(data,true));
+				this.stringPatterns.add(new StringPattern(data));
 			}
 			else {
 				this.stringPatterns.get(index).setActive();
@@ -50,21 +56,25 @@ public class MPSM {
 	
 	/**
 	 * Sets it as inactive. Does not actually delete it so that they can be used for statistics
+	 * @param data The string to mark as inactive
 	 */
 	public void removeString(String data) {
 		//synchronized(stringPatterns) {
-			Integer index = this.stringPatterns.indexOf(data);
+			int index = this.stringPatterns.indexOf(data);
 			if(index>=0) {
 				this.stringPatterns.get(index).setInactive();
 			}
 		//}
 	}
 	
+	/**
+	 * @param data The ip to mark as active.
+	 */
 	public void addIP(String data) {
 		//synchronized(ipPatterns) {
-			Integer index = this.ipPatterns.indexOf(data);
+			int index = this.ipPatterns.indexOf(data);
 			if(index<0) {
-				this.ipPatterns.add(new StringPattern(data,true));
+				this.ipPatterns.add(new StringPattern(data));
 			}
 			else {
 				this.ipPatterns.get(index).setActive();
@@ -74,10 +84,11 @@ public class MPSM {
 
 	/**
 	 * Sets it as inactive. Does not actually delete it so that they can be used for statistics
+	 * @param data The IP to set as inactive.
 	 */
 	public void removeIP(String data) {
 		//synchronized(ipPatterns) {
-			Integer index = this.ipPatterns.indexOf(data);
+			int index = this.ipPatterns.indexOf(data);
 			if(index>=0) {
 				this.ipPatterns.get(index).setInactive();
 			}
@@ -96,13 +107,12 @@ public class MPSM {
 		}
 	}
 
+	/**
+	 * @param addrSource The address to search for
+	 * @return True if the memory contains the address, else false.
+	 */
 	public Boolean containsIP(InetAddress addrSource) {
-		if(this.ipPatterns.contains(addrSource)) {
-			return true;
-		}
-		else {
-			return false;
-		}
+		return this.ipPatterns.contains(addrSource);
 	}
 
 	/**
@@ -121,8 +131,12 @@ public class MPSM {
 		return retVal;
 	}
 
+	/**
+	 * @param addrSource The IP pattern to search for
+	 * @return The malicious IP pattern matching this address, else null
+	 */
 	public StringPattern getMatchingIP(InetAddress addrSource) {
-		Integer index = this.ipPatterns.indexOf(addrSource);
+		int index = this.ipPatterns.indexOf(addrSource);
 		if(index>=0) {
 			return this.ipPatterns.get(index);
 		}

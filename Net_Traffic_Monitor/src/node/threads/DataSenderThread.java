@@ -11,7 +11,7 @@ import node.Node_Main;
 import node.sharedMemory.DetectionFrequencyString;
 import node.sharedMemory.InterfaceAddressStats;
 import node.sharedMemory.InterfaceStatistics;
-import node.sharedMemory.SharedMemory;
+import node.sharedMemory.Node_SharedMemory;
 import shared_data.StatusCode;
 import exceptions.NTMonUnableToRefreshException;
 
@@ -20,7 +20,7 @@ import exceptions.NTMonUnableToRefreshException;
  *
  */
 public class DataSenderThread implements Runnable {
-	SharedMemory localCopy = null;
+	Node_SharedMemory localCopy = null;
 
 	/**
 	 * 
@@ -35,7 +35,7 @@ public class DataSenderThread implements Runnable {
 	@Override
 	public void run() {
 		//Create memory as per specifications
-		Node_Main.sharedMemory = new SharedMemory();
+		Node_Main.node_SharedMemory = new Node_SharedMemory();
 		Node_Main.senderReady.set(true);
 		synchronized(Node_Main.senderReady) {
 			Node_Main.senderReady.notify();
@@ -45,7 +45,7 @@ public class DataSenderThread implements Runnable {
 			//Wait refresh rate before retrying
 			try {
 				synchronized(Node_Main.exiting) {
-					Node_Main.exiting.wait(Node_Main.configClass.getRefreshRate()*1000);
+					Node_Main.exiting.wait(Node_Main.node_ConfigClass.getRefreshRate()*1000);
 				}
 			} catch (InterruptedException e) {
 				System.err.println("DEBUG: Interrupted while waiting to send data.");
@@ -57,14 +57,14 @@ public class DataSenderThread implements Runnable {
 			synchronized(Node_Main.accumulatorConnection) {
 				//Get a copy of SMPSM
 				//TODO change this to make it use a cheaper data structure?
-				this.localCopy = new SharedMemory(Node_Main.sharedMemory);
+				this.localCopy = new Node_SharedMemory(Node_Main.node_SharedMemory);
 				try{
 					Node_Main.refreshConnectionRequest();
 					sendData();
 				}
 				catch (IOException e) {
 					System.err.println("ERROR: Exception while trying to send data. Will retry in "+
-							Node_Main.configClass.getRefreshRate()+" seconds.");
+							Node_Main.node_ConfigClass.getRefreshRate()+" seconds.");
 					e.printStackTrace();
 				} catch (NTMonUnableToRefreshException e) {
 					e.printStackTrace();

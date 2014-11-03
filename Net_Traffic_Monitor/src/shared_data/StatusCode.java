@@ -71,9 +71,12 @@ public enum StatusCode {
 	 * Usually sent before any communication with the server after flushing the incoming part of the stream.<br>
 	 */
 	REFRESH_REQUEST,
-	/** Sent by the server to inform a client that it made a refresh request for a client that doesn't exist.
+	/** Sent by the server to inform a client that it made a refresh request for a client that doesn't exist
 	 */
 	NO_SUCH_CLIENT, 
+	/** Sent by the server to inform a client that it made a refresh request for a client that has been marked as disconnected
+	 */
+	CLIENT_DISCONNECTED,
 	/** Sent to declare a new interface as part of sending statistics data<br>
 	 * Usually followed by the interface name in the form of byte array length followed by the byte array 
 	 * and after that a boolean showing whether or not this interface is currently active <br>
@@ -96,5 +99,9 @@ public enum StatusCode {
 	 * Usually followed by the string pattern in the form of a byte array suze and then the byte array itself and then
 	 * the frequency as an integer<br> 
 	 */
-	MALICIOUS_STRING_ACTIVITY
+	MALICIOUS_STRING_ACTIVITY,
+	/** Sent to indicate that the provided data was out of bounds.<br>
+	 * During a set refresh rate request, this might indicate that the sent refresh rate was less than or equal to zero.
+	 */
+	VALUE_OUT_OF_BOUNDS
 }

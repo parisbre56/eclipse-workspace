@@ -28,7 +28,7 @@ public class InterfaceCheckerThread implements Runnable {
 	 */
 	@Override
 	public void run() {
-		LinkedList<PcapIf> newList = new LinkedList<PcapIf>();
+		LinkedList<PcapIf> newList = new LinkedList<>();
 		StringBuilder errorStr = new StringBuilder(); 
 		while(Node_Main.exiting.get()==false) {
 			errorStr.setLength(0);
@@ -38,19 +38,19 @@ public class InterfaceCheckerThread implements Runnable {
 			}
 			//Start searching through the new list for additions
 			for(PcapIf newIf : newList) {
-				if(!Node_Main.sharedMemory.containsPcapIf(newIf)) {
-					Node_Main.sharedMemory.addInterface(newIf);
+				if(!Node_Main.node_SharedMemory.containsPcapIf(newIf)) {
+					Node_Main.node_SharedMemory.addInterface(newIf);
 					//Start a new inspector thread for them. Inspector threads should stop once they have no data to process.
 					Node_Main.threads.add(new Thread(null, new PacketInspectorThread(newIf), newIf.getName()+" Packet Inspector"));
-					Node_Main.threads.get(Node_Main.threads.size()-1).run();
+					Node_Main.threads.get(Node_Main.threads.size()-1).start();
 				}
 			}
 			//Start searching through the old list for deletions
-			Node_Main.sharedMemory.removeNonexistentInterfaces(newList);
+			Node_Main.node_SharedMemory.removeNonexistentInterfaces(newList);
 			//Wait for refresh rate
 			try {
 				synchronized(Node_Main.exiting) {
-					Node_Main.exiting.wait(Node_Main.configClass.getRefreshRate()*1000);
+					Node_Main.exiting.wait(Node_Main.node_ConfigClass.getRefreshRate()*1000);
 				}
 			} catch (InterruptedException e) {
 				System.err.println("DEBUG: Interrupted while waiting to send data.");

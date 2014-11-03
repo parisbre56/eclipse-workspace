@@ -5,7 +5,7 @@ package node.sharedMemory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
+/** Just holds an atomic integer for the frequency
  * @author Parisbre56
  *
  */
@@ -20,6 +20,9 @@ public class DetectionFrequency {
 		this.frequency=new AtomicInteger(0);
 	}
 	
+	/** Copy constructor, just creates a new atomic integer for frequency.
+	 * @param dF The detection frequency to copy
+	 */
 	public DetectionFrequency(DetectionFrequency dF) {
 		this.frequency=new AtomicInteger(dF.frequency.get());
 	}
@@ -33,7 +36,7 @@ public class DetectionFrequency {
 	/**
 	 * @return The number of detections for this event
 	 */
-	public Integer getFrequency() {
+	public int getFrequency() {
 		return this.frequency.get();
 	}
 

@@ -10,7 +10,7 @@ import node.PacketInspectionHandlerWithCheck;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 
-/**
+/** Checks all packets going through the interface
  * @author Parisbre56
  *
  */
@@ -23,7 +23,7 @@ public class PacketInspectorThread implements Runnable {
 	 * 
 	 */
 	public PacketInspectorThread(PcapIf newIf) {
-		currIf=newIf;
+		this.currIf=newIf;
 		
 	}
 
@@ -36,13 +36,13 @@ public class PacketInspectorThread implements Runnable {
 		
 		//Open monitor
 		errbuf.setLength(0);
-		Pcap pcap = Pcap.openLive(currIf.getName(), Node_Main.configClass.getSnaplen(), 
-				Pcap.MODE_PROMISCUOUS, Node_Main.configClass.getSnapTimeout()*1000, errbuf );
+		Pcap pcap = Pcap.openLive(this.currIf.getName(), Node_Main.node_ConfigClass.getSnaplen(), 
+				Pcap.MODE_PROMISCUOUS, Node_Main.node_ConfigClass.getSnapTimeout()*1000, errbuf );
 		
 		//Check for error. Remove interface from shared memory so that it is found next time. 
 		if(pcap==null) {
-			System.err.println("ERROR: Unable to listen on interface "+currIf.getName()+" Reason: "+errbuf);
-			Node_Main.sharedMemory.removeInterface(currIf);
+			System.err.println("ERROR: Unable to listen on interface "+this.currIf.getName()+" Reason: "+errbuf);
+			Node_Main.node_SharedMemory.removeInterface(this.currIf);
 			Node_Main.threads.remove(Thread.currentThread());
 			synchronized(Node_Main.threads) {
 				Node_Main.threads.notifyAll();
@@ -55,18 +55,18 @@ public class PacketInspectorThread implements Runnable {
 			System.err.println("WARNING: Warning while opening interface for listening: "+errbuf);
 		}
 		
-		Integer retVal;
-		if(Node_Main.configClass.getPacketBatchSize()==Pcap.LOOP_INFINITE) {
+		int retVal;
+		if(Node_Main.node_ConfigClass.getPacketBatchSize()==Pcap.LOOP_INFINITE) {
 			//Check for -1 or -2
-			retVal=pcap.loop(Pcap.LOOP_INFINITE, new PacketInspectionHandlerWithCheck(pcap,currIf), Node_Main.sharedMemory);
+			retVal=pcap.loop(Pcap.LOOP_INFINITE, new PacketInspectionHandlerWithCheck(pcap,this.currIf), Node_Main.node_SharedMemory);
 			if(retVal!=Pcap.OK && retVal!=Pcap.ERROR_BREAK) {
-				System.err.println("ERROR: "+retVal.toString()+" returned from pcap.loop method");
+				System.err.println("ERROR: "+Integer.toString(retVal)+" returned from pcap.loop method");
 			}
 		}
 		else {
 			//While the program is not exiting and the interface still exists
-			while(Node_Main.exiting.get()!=false && Node_Main.sharedMemory.containsPcapIf(currIf)) {
-				retVal=pcap.loop(Node_Main.configClass.getPacketBatchSize(), new PacketInspectionHandler(currIf), Node_Main.sharedMemory);
+			while(Node_Main.exiting.get()!=false && Node_Main.node_SharedMemory.containsPcapIf(this.currIf)) {
+				retVal=pcap.loop(Node_Main.node_ConfigClass.getPacketBatchSize(), new PacketInspectionHandler(this.currIf), Node_Main.node_SharedMemory);
 				if(retVal!=Pcap.OK && retVal!=Pcap.ERROR_BREAK) {
 					System.err.println("ERROR: "+retVal+" returned from pcap.loop method");
 				}

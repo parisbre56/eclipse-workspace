@@ -21,18 +21,16 @@ public class StringPattern {
 	public AtomicBoolean active;
 
 	/**
-	 * 
+	 * @param pattern1 The pattern to create
 	 */
-	public StringPattern(String pattern, Boolean active) {
-		this.pattern=new String(pattern);
-		this.active=new AtomicBoolean(active);
+	public StringPattern(String pattern1) {
+		this.pattern=new String(pattern1);
+		this.active=new AtomicBoolean(true);
 	}
-
-	public StringPattern(String pattern) {
-		this.pattern=new String(pattern);
-		this.active=new AtomicBoolean(false);
-	}
-	
+	/**
+	 * Copy constructor. Creates a deep copy of the original
+	 * @param stringPattern The pattern to copy
+	 */
 	public StringPattern(StringPattern stringPattern) {
 		this.pattern=new String(stringPattern.pattern);
 		this.active=new AtomicBoolean(stringPattern.active.get());
@@ -59,11 +57,11 @@ public class StringPattern {
 			return this.pattern.equals(((StringPattern) object).pattern);
 		}
 		else if (object.getClass()==String.class) {
-			return this.pattern.equals((String) object);
+			return this.pattern.equals(object);
 		}
 		else if (object.getClass()==InetAddress.class) {
 			try {
-				return Arrays.asList(InetAddress.getAllByName(this.pattern)).contains((InetAddress) object);
+				return Arrays.asList(InetAddress.getAllByName(this.pattern)).contains(object);
 			} catch (UnknownHostException e) {
 				System.err.println("ERROR: Cannot find ip of host "+this.pattern+" during equals operation");
 				e.printStackTrace();
@@ -80,15 +78,19 @@ public class StringPattern {
 	 */
 	@Override
 	public int hashCode() {
-		return pattern.hashCode(); 
+		return this.pattern.hashCode(); 
 	}
 
+	/** Marks this pattern as active
+	 */
 	public void setActive() {
 		//Since this is a singe writer implementation, 
 		//lazySet should make this faster (assuming the server does not send inconsistent requests)
 		this.active.lazySet(true);
 	}
 
+	/** Marks that pattern as inactive
+	 */
 	public void setInactive() {
 		//Since this is a singe writer implementation, 
 		//lazySet should make this faster (assuming the server does not send inconsistent requests)

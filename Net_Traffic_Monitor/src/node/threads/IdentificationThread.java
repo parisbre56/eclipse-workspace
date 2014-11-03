@@ -46,8 +46,8 @@ public class IdentificationThread implements Runnable {
 		//We are certain that only this thread can access the socket at this time, 
 		//so no need to concern ourselves with concurrency
 		try {
-			Node_Main.accumulatorConnection = new Socket(Node_Main.configClass.getAccumulatorAddress(),
-					Node_Main.configClass.getAccumulatorPort());
+			Node_Main.accumulatorConnection = new Socket(Node_Main.node_ConfigClass.getAccumulatorAddress(),
+					Node_Main.node_ConfigClass.getAccumulatorPort());
 		} catch (IOException e) {
 			System.err.println("ERROR: Unable to establish connection to the accumulator.");
 			e.printStackTrace();
@@ -72,7 +72,7 @@ public class IdentificationThread implements Runnable {
 		 * If successful, send additional data
 		 */
 		try {
-			Integer nameConflictCounter=0;
+			int nameConflictCounter=0;
 			Node_Main.os = new DataOutputStream(Node_Main.accumulatorConnection.getOutputStream());
 			Node_Main.is = new DataInputStream(Node_Main.accumulatorConnection.getInputStream());
 			while(true) {
@@ -81,17 +81,17 @@ public class IdentificationThread implements Runnable {
 				//Create name
 				String tempName;
 				if(nameConflictCounter>0) {
-					tempName=Node_Main.configClass.getId()+"-"+Integer.toString(nameConflictCounter);
+					tempName=Node_Main.node_ConfigClass.getId()+"-"+Integer.toString(nameConflictCounter);
 				}
 				else {
-					tempName=Node_Main.configClass.getId();
+					tempName=Node_Main.node_ConfigClass.getId();
 				}
 				//Send name size
 				Node_Main.os.writeInt(tempName.getBytes().length);
 				//Send name
 				Node_Main.os.write(tempName.getBytes());
 				//Read response
-				Integer response = Node_Main.is.readInt();
+				int response = Node_Main.is.readInt();
 				if(response != StatusCode.ALL_CLEAR.ordinal()) {
 					//If the name is taken, retry with a different name
 					if(response == StatusCode.NAME_ALREADY_EXISTS.ordinal()) {
@@ -101,11 +101,11 @@ public class IdentificationThread implements Runnable {
 						continue;
 					}
 					//Else if there was some kind of other problem we can't handle, fail
-					System.err.println("ERROR: Received signal "+response.toString()+":"
+					System.err.println("ERROR: Received signal "+Integer.toString(response)+":"
 							+StatusCode.values()[response].toString()+" from the accumulator while "
 									+ "trying to register.");
 					Node_Main.identificationFailedReason=new NTMonException("ERROR: Received signal "
-							+response.toString()+":"
+							+Integer.toString(response)+":"
 							+StatusCode.values()[response].toString()+" from the accumulator while "
 							+ "trying to register.");
 					Node_Main.identificationFailed.set(true);
@@ -120,7 +120,7 @@ public class IdentificationThread implements Runnable {
 					return;
 				}
 				//If successful, change the Id in the settings and continue out of the loop
-				Node_Main.configClass.setId(tempName);
+				Node_Main.node_ConfigClass.setId(tempName);
 				break;
 			}
 		} catch (IOException e) {
@@ -150,21 +150,21 @@ public class IdentificationThread implements Runnable {
 		}
 		
 		//Send the refresh rate to the server (concurrency becomes an issue, must synchronize)
-		Integer retries = 0;
+		int retries = 0;
 		while(true) {
 			++retries;
 			try{
 				synchronized(Node_Main.accumulatorConnection) {
 					Node_Main.refreshConnectionRequest();
 					Node_Main.os.writeInt(StatusCode.SET_REFRESH_RATE.ordinal());
-					Node_Main.os.writeInt(Node_Main.configClass.getRefreshRate());
-					Integer response = Node_Main.is.readInt();
+					Node_Main.os.writeInt(Node_Main.node_ConfigClass.getRefreshRate());
+					int response = Node_Main.is.readInt();
 					if(response==StatusCode.ALL_CLEAR.ordinal()) {
 						break;
 					}
 					//Else if there was a problem
 					System.err.println("ERROR: Received signal "
-							+response.toString()+":"
+							+Integer.toString(response)+":"
 							+StatusCode.values()[response].toString()+" from the accumulator while "
 							+ "trying to send refresh rate.");
 				}
@@ -183,7 +183,7 @@ public class IdentificationThread implements Runnable {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			if(retries<Node_Main.maxRetries) {
+			if(retries<Node_Main.node_ConfigClass.getReconnectAttempts()) {
 				System.err.println("ERROR: Will retry to send refresh rate.");
 			}
 			else {
@@ -230,10 +230,10 @@ public class IdentificationThread implements Runnable {
 				try {
 					Node_Main.refreshConnectionRequest();
 					Node_Main.os.writeInt(StatusCode.EXIT_REQUEST.ordinal());
-					Integer response = Node_Main.is.readInt();
+					int response = Node_Main.is.readInt();
 					if(response!=StatusCode.ALL_CLEAR.ordinal()) {
 						System.err.println("DEBUG: Received signal "
-								+response.toString()+":"
+								+Integer.toString(response)+":"
 								+StatusCode.values()[response].toString()+" from the accumulator while "
 								+ "trying to send exit signal to it.");
 					}
@@ -243,7 +243,7 @@ public class IdentificationThread implements Runnable {
 					++retries;
 					System.err.println("ERROR: Exception while trying to send exit signal to accumulator.");
 					e.printStackTrace();
-					if(retries<Node_Main.maxRetries) {
+					if(retries<Node_Main.node_ConfigClass.getReconnectAttempts()) {
 						System.err.println("ERROR: Will retry to send exit signal.");
 					}
 					else {

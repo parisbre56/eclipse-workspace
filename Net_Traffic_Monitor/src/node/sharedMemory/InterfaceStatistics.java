@@ -104,7 +104,7 @@ public class InterfaceStatistics {
 		
 		//Then search for the appropriate entry for that address (or create it if it doesn't exist) and insert it.
 		InterfaceAddressStats stat = new InterfaceAddressStats(addr);
-		Integer index = this.interfaceAdressesStats.indexOf(stat);
+		int index = this.interfaceAdressesStats.indexOf(stat);
 		if(index>=0) {
 			this.interfaceAdressesStats.get(index).addIpEvent(pat);
 		}
@@ -138,7 +138,7 @@ public class InterfaceStatistics {
 		
 		//Then search for the appropriate entry for that address (or create it if it doesn't exist) and insert it.
 		InterfaceAddressStats stat = new InterfaceAddressStats(addr);
-		Integer index = this.interfaceAdressesStats.indexOf(stat);
+		int index = this.interfaceAdressesStats.indexOf(stat);
 		if(index>=0) {
 			this.interfaceAdressesStats.get(index).addStringEventCollection(collection);
 		}
