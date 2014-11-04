@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project name="Net_Traffic_Monitor" basedir="." default="all">
+	
+	<taskdef name="jnetpcapjar" classname="org.jnetpcapjar.ant.JnetpcapJarTask" classpath="./src/jnetpcapjar.jar"/>
+	<taskdef name="swtjar" classname="org.swtjar.ant.SWTJarTask" classpath="./src/swtjar.jar"/>
+
+	<target name="node_to_jar">
+		<!-- Package cross platform Jnetpcap Jar and Native Lbrary to Node-->
+		<jnetpcapjar jarfile="./node.jar" targetmainclass="node.Node_Main" swtversion="">
+	
+			  <!-- Application Classes -->
+			  <fileset dir="./bin/" includes="**/*.class" />
+	  
+			  <!-- JNetPcap Jars -->
+			  <fileset dir="./src" includes="jnetpcap_*.jar" />
+			
+			  <!-- JNetPcap Native Libraries -->
+			  <fileset dir="./src" includes="libjnetpcap_*" />
+	
+		</jnetpcapjar>
+	</target>
+	
+	<target name="accumulator_to_jar">
+		<!-- Package cross platform SWT Jar to Accumulator-->
+		<swtjar jarfile="./accumulator.jar" targetmainclass="accumulator.Accumulator_Main" swtversion="4.3">
+	
+			  <!-- Application Classes -->
+			  <fileset dir="./bin/" includes="**/*.class" />
+	  
+			  <!-- SWT Jars -->
+			  <fileset dir="./src" includes="swt-*-4.3.jar" />
+		</swtjar>
+	</target>
+	
+	<target name="all" depends="accumulator_to_jar,node_to_jar">
+	
+	</target>
+
+</project>

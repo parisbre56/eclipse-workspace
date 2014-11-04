@@ -34,6 +34,7 @@ public class Node_ShutdownHookThread implements Runnable {
 
 		//Wait for all other threads to exit
 		while(containsLiveThreads(Node_Main.threads)) {
+			System.err.println("DEBUG: Exiting... Still alive.");
 			try {
 				synchronized(Node_Main.threads) {
 					Node_Main.threads.wait(Node_Main.defaultTimeout*1000);

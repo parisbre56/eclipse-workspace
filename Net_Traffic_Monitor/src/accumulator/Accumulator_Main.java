@@ -74,6 +74,7 @@ public class Accumulator_Main {
 				try {
 					@SuppressWarnings("resource") //The thread closes the connection
 					Socket connection = servSock.accept();
+					connection.setReuseAddress(true);
 					//Start connection handler for this thread
 					threads.add(new Thread(null, new ConnectionProcessorThread(connection, count), "Connection "
 							+ "Processor Thread "+Integer.toString(count)));

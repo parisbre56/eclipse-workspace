@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
@@ -34,17 +35,17 @@ public class Node_Main {
 	//Shared data
 	/** Holds all configuration info set either via flags or via the config file
 	 */
-	static public Node_ConfigClass node_ConfigClass = null;
+	static public final Node_ConfigClass node_ConfigClass = new Node_ConfigClass();
 	
 	//Shared data for the identification thread
 	/** Set to true and signaled with notify 
 	 * to indicate that the identification thread has finished connecting to the server.
 	 */
-	static public AtomicBoolean identificationReady = null;
+	static public final AtomicBoolean identificationReady = new AtomicBoolean(false);
 	/** Set to true and signaled with notify
 	 * to indicate that the identification thread failed with no chance of recovery.
 	 */
-	static public AtomicBoolean identificationFailed = null;
+	static public final AtomicBoolean identificationFailed = new AtomicBoolean(false);
 	/** The reason the identification thread failed if possible, else null
 	 */
 	static public Exception identificationFailedReason = null;
@@ -53,10 +54,10 @@ public class Node_Main {
 	/** Set to true and signaled with notify 
 	 * to indicate that the data sender thread has finished setting up the shared memory
 	 */
-	public static AtomicBoolean senderReady = null;
+	public static final AtomicBoolean senderReady = new AtomicBoolean(false);
 	/** Set to true to indicate that the sender thread failed with no chance of recovery
 	 */
-	public static AtomicBoolean senderFailed = null;
+	public static final AtomicBoolean senderFailed = new AtomicBoolean(false);
 	/** The reason the sender failed if possible, else null
 	 */
 	static public Exception senderFailedReason = null;
@@ -64,16 +65,16 @@ public class Node_Main {
 	//Shared exit data
 	/** Indicates that the program is in the process of exiting.
 	 */
-	static public AtomicBoolean exiting = null;
+	static public final AtomicBoolean exiting = new AtomicBoolean(false);
 	/** Indicates that the exiting variable has been set due to a fatal exception.
 	 */
-	private static AtomicBoolean exitingException = null;
+	private static final AtomicBoolean exitingException = new AtomicBoolean(false);
 	
 	//Shared thread data
 	/** Keeps a list of all the threads that ever ran in the system.<br>
 	 * Threads should try to remove themselves at exit.<br>
 	 */
-	static public CopyOnWriteArrayList<Thread> threads = null;
+	static public final CopyOnWriteArrayList<Thread> threads = new CopyOnWriteArrayList<>();
 	
 	//Shared connection data
 	/** The connection to the server.<br>
@@ -118,22 +119,7 @@ public class Node_Main {
 	 * 
 	 */
 	public Node_Main() {
-		//Create config class with default data
-		node_ConfigClass = new Node_ConfigClass();
-		
-		//Create notification variables
-		identificationReady = new AtomicBoolean(false);
-		identificationFailed = new AtomicBoolean(false);
-		
-		senderReady = new AtomicBoolean(false);
-		senderFailed = new AtomicBoolean(false);
-		
-		exiting = new AtomicBoolean(false);
-		exitingException = new AtomicBoolean(false);
-		
-		threads = new CopyOnWriteArrayList<>();
-		
-		// TODO Set up any data necessary
+		//Nothing to initialize
 	}
 
 	/**
@@ -162,7 +148,9 @@ public class Node_Main {
 				if(identificationFailed.get()==true) {
 					System.err.println("ERROR: Identification thread failed. Exiting...");
 					exiting.set(true);
-					exiting.notifyAll();
+					synchronized(exiting) {
+						exiting.notifyAll();
+					}
 					return;
 				}
 			}
@@ -184,7 +172,9 @@ public class Node_Main {
 				if(senderFailed.get()==true) {
 					System.err.println("ERROR: Identification thread failed. Exiting...");
 					exiting.set(true);
-					exiting.notifyAll();
+					synchronized (exiting) {
+						exiting.notifyAll();
+					}
 					return;
 				}
 			}
@@ -348,16 +338,17 @@ public class Node_Main {
 	 * If it is unable to do so, it will initiate the exit sequence.<br>
 	 * Used by all threads before communication. <br>
 	 * NOT synchronized as the caller should had already done that.<br>
-	 * @throws NTMonUnableToRefreshException If there was a fatal problem with the connection. The program will no EXIT.
+	 * @param retries How many times this has failed and called itself 
+	 * @throws NTMonUnableToRefreshException If there was a fatal problem with the connection. The program will now EXIT.
 	 * @throws IOException If there was a non-fatal communication exception
 	 */
-	public static void refreshConnectionRequest() throws NTMonUnableToRefreshException, IOException {
+	public static void refreshConnectionRequest(int retries) throws NTMonUnableToRefreshException, IOException {
 		//No reason to continue if exiting due to an error.
 		if(exitingException.get()) {
 			throw new NTMonUnableToRefreshException();
 		}
 		//First checks whether or not the connection is open
-		if(accumulatorConnection.isClosed() ||
+		if(accumulatorConnection.isClosed() || 
 				accumulatorConnection.isInputShutdown()||accumulatorConnection.isOutputShutdown()) {
 			System.err.println("ERROR: Connection closed.");
 			Boolean success=false;
@@ -365,8 +356,12 @@ public class Node_Main {
 			{
 				System.err.println("DEBUG: Attempting to recconect.");
 				try {
-					Node_Main.accumulatorConnection = new Socket(Node_Main.node_ConfigClass.getAccumulatorAddress(),
-							Node_Main.node_ConfigClass.getAccumulatorPort());
+					Node_Main.accumulatorConnection = new Socket();
+					Node_Main.accumulatorConnection.setReuseAddress(true);
+					Node_Main.accumulatorConnection.setSoTimeout(Node_Main.node_ConfigClass.getRefreshRate()*1000);
+					Node_Main.accumulatorConnection.connect(new InetSocketAddress(Node_Main.node_ConfigClass.getAccumulatorAddress(), 
+							Node_Main.node_ConfigClass.getAccumulatorPort()), 
+							Node_Main.node_ConfigClass.getRefreshRate()*1000);
 				} catch (IOException e) {
 					System.err.println("ERROR: Unable to reconnect to server.");
 					e.printStackTrace();
@@ -406,11 +401,31 @@ public class Node_Main {
 			e.printStackTrace();
 		}
 		//Send refresh request
-		os.writeInt(StatusCode.REFRESH_REQUEST.ordinal());
-		os.writeInt(node_ConfigClass.getId().getBytes().length);
-		os.write(node_ConfigClass.getId().getBytes());
-		//Read response
-		int response = is.readInt();
+		int response=-10;
+		try {
+			os.writeInt(StatusCode.REFRESH_REQUEST.ordinal());
+			os.writeInt(node_ConfigClass.getId().getBytes().length);
+			os.write(node_ConfigClass.getId().getBytes());
+			//Read response
+			response = is.readInt();
+		}
+		catch (IOException e) {
+			System.err.println("ERROR: Unable to refresh connection, closing connection...");
+			is.close();
+			os.close();
+			accumulatorConnection.close();
+			if(retries<node_ConfigClass.getReconnectAttempts()) {
+				refreshConnectionRequest(retries+1);
+				return;
+			}
+			System.err.println("ERROR: Max number of refresh retries reached. Exiting...");
+			exitingException.set(true);
+			exiting.set(true);
+			synchronized(exiting) {
+				exiting.notifyAll();
+			}
+			throw new NTMonUnableToRefreshException();
+		}
 		
 		if(response!=StatusCode.ALL_CLEAR.ordinal()) {
 			System.err.println("ERROR: Refresh connection attempt failed. "
@@ -423,6 +438,19 @@ public class Node_Main {
 			}
 			throw new NTMonUnableToRefreshException();
 		}
+	}
+	
+	/** Sends a refresh request to the server, to ensure that everything is OK with the connection.<br> 
+	 * If there is a fatal error, the program starts its exit sequence and throws NTMonUnableToRefreshException!!!<br>
+	 * If the connection is closed, an attempt will be made to reopen it. 
+	 * If it is unable to do so, it will initiate the exit sequence.<br>
+	 * Used by all threads before communication. <br>
+	 * NOT synchronized as the caller should had already done that.<br>
+	 * @throws NTMonUnableToRefreshException If there was a fatal problem with the connection. The program will now EXIT.
+	 * @throws IOException If there was a non-fatal communication exception
+	 */
+	public static void refreshConnectionRequest() throws NTMonUnableToRefreshException, IOException {
+		refreshConnectionRequest(0);
 	}
 	
 	

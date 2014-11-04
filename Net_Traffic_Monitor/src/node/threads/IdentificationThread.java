@@ -6,6 +6,7 @@ package node.threads;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import node.Node_Main;
@@ -46,8 +47,12 @@ public class IdentificationThread implements Runnable {
 		//We are certain that only this thread can access the socket at this time, 
 		//so no need to concern ourselves with concurrency
 		try {
-			Node_Main.accumulatorConnection = new Socket(Node_Main.node_ConfigClass.getAccumulatorAddress(),
-					Node_Main.node_ConfigClass.getAccumulatorPort());
+			Node_Main.accumulatorConnection = new Socket();
+			Node_Main.accumulatorConnection.setReuseAddress(true);
+			Node_Main.accumulatorConnection.setSoTimeout(Node_Main.node_ConfigClass.getRefreshRate()*1000);
+			Node_Main.accumulatorConnection.connect(new InetSocketAddress(Node_Main.node_ConfigClass.getAccumulatorAddress(), 
+					Node_Main.node_ConfigClass.getAccumulatorPort()), 
+					Node_Main.node_ConfigClass.getRefreshRate()*1000);
 		} catch (IOException e) {
 			System.err.println("ERROR: Unable to establish connection to the accumulator.");
 			e.printStackTrace();

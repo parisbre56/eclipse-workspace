@@ -128,6 +128,9 @@ public class Accumulator_SharedMemory {
 		return null;
 	}
 
+	/** Marks the connection as disconnected if its state is TimedOut, else does nothing
+	 * @param connID the id of the connection to mark as disconnected
+	 */
 	public void setDisconnectedIfTimedOut(String connID) {
 		ConnectionData data = this.connectionData.get(connID);
 		if(data!=null) {

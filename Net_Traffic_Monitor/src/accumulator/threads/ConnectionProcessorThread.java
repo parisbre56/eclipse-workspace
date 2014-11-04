@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import exceptions.NTMonException;
 import shared_data.StatusCode;
 import accumulator.Accumulator_Main;
-import accumulator.MaliciousPattern;
 import accumulator.MaliciousPatternEvent;
 
 /**

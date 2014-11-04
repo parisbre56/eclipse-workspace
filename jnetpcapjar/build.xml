@@ -1,0 +1,38 @@
+<project name="Jnetpcapjar" basedir="." default="help">
+
+  <target name="help">
+    <java classname="org.apache.tools.ant.Main">
+      <arg value="-projecthelp" />
+    </java>
+  </target>
+
+  <target name="clean" description="Comile classes">
+    <delete dir="./build" />
+    <delete dir="./reports" />
+  </target>
+
+  <target name="build" description="Comile classes">
+    <mkdir dir="./build" />
+    <mkdir dir="./build/classes" />
+
+    <javac destdir="./build/classes" debug="true" source="1.7" target="1.7">
+      <src path="./src"/>
+      <classpath>
+        <fileset dir="./lib" includes="*.jar" />
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="jar" description="Create Jars" depends="build" >
+
+    <mkdir dir="./build/jars/" />
+
+    <!-- jnetpcapjar ant task -->
+    <jar jarfile="./build/jars/jnetpcapjar.jar" compress="false">
+      <fileset dir="./build/classes"/>
+      <zipfileset excludes="META-INF/*.MF" src="lib/jar-in-jar-loader.jar"/>
+    </jar>
+
+  </target>
+
+</project>

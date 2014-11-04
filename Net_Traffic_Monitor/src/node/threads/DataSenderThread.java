@@ -38,7 +38,7 @@ public class DataSenderThread implements Runnable {
 		Node_Main.node_SharedMemory = new Node_SharedMemory();
 		Node_Main.senderReady.set(true);
 		synchronized(Node_Main.senderReady) {
-			Node_Main.senderReady.notify();
+			Node_Main.senderReady.notifyAll();
 		}
 		
 		while(Node_Main.exiting.get()==false) {

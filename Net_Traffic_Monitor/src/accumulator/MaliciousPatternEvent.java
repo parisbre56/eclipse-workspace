@@ -9,12 +9,12 @@ public class MaliciousPatternEvent {
 	private final boolean isAddition; 
 
 	/**
-	 * @param pattern The malicious pattern, be it string or IP
-	 * @param isAddition True if this is an addition event, false if this is a deletion event
+	 * @param pattern1 The malicious pattern, be it string or IP
+	 * @param isAddition1 True if this is an addition event, false if this is a deletion event
 	 */
-	public MaliciousPatternEvent(MaliciousPattern pattern, boolean isAddition) {
-		this.pattern=pattern;
-		this.isAddition=isAddition;
+	public MaliciousPatternEvent(MaliciousPattern pattern1, boolean isAddition1) {
+		this.pattern=pattern1;
+		this.isAddition=isAddition1;
 	}
 
 	/**
