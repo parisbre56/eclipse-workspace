@@ -44,7 +44,15 @@ public class MPSM {
 	 */
 	public void addString(String data) {
 		//synchronized(stringPatterns) {
-			int index = this.stringPatterns.indexOf(data);
+			int index = -1;
+			int tempIndex = 0;
+			for(StringPattern e : this.stringPatterns) {
+				if(e.equals(data)) {
+					index=tempIndex;
+					break;
+				}
+				++tempIndex;
+			}
 			if(index<0) {
 				this.stringPatterns.add(new StringPattern(data));
 			}
@@ -60,7 +68,15 @@ public class MPSM {
 	 */
 	public void removeString(String data) {
 		//synchronized(stringPatterns) {
-			int index = this.stringPatterns.indexOf(data);
+			int index = -1;
+			int tempIndex = 0;
+			for(StringPattern e : this.stringPatterns) {
+				if(e.equals(data)) {
+					index=tempIndex;
+					break;
+				}
+				++tempIndex;
+			}
 			if(index>=0) {
 				this.stringPatterns.get(index).setInactive();
 			}
@@ -72,7 +88,15 @@ public class MPSM {
 	 */
 	public void addIP(String data) {
 		//synchronized(ipPatterns) {
-			int index = this.ipPatterns.indexOf(data);
+			int index = -1;
+			int tempIndex = 0;
+			for(StringPattern e : this.ipPatterns) {
+				if(e.equals(data)) {
+					index=tempIndex;
+					break;
+				}
+				++tempIndex;
+			}
 			if(index<0) {
 				this.ipPatterns.add(new StringPattern(data));
 			}
@@ -88,7 +112,15 @@ public class MPSM {
 	 */
 	public void removeIP(String data) {
 		//synchronized(ipPatterns) {
-			int index = this.ipPatterns.indexOf(data);
+			int index = -1;
+			int tempIndex = 0;
+			for(StringPattern e : this.ipPatterns) {
+				if(e.equals(data)) {
+					index=tempIndex;
+					break;
+				}
+				++tempIndex;
+			}
 			if(index>=0) {
 				this.ipPatterns.get(index).setInactive();
 			}
@@ -112,7 +144,12 @@ public class MPSM {
 	 * @return True if the memory contains the address, else false.
 	 */
 	public Boolean containsIP(InetAddress addrSource) {
-		return this.ipPatterns.contains(addrSource);
+		for(StringPattern e : this.ipPatterns) {
+			if(e.equals(addrSource)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -136,7 +173,15 @@ public class MPSM {
 	 * @return The malicious IP pattern matching this address, else null
 	 */
 	public StringPattern getMatchingIP(InetAddress addrSource) {
-		int index = this.ipPatterns.indexOf(addrSource);
+		int index = -1;
+		int tempIndex = 0;
+		for(StringPattern e : this.ipPatterns) {
+			if(e.equals(addrSource)) {
+				index=tempIndex;
+				break;
+			}
+			++tempIndex;
+		}
 		if(index>=0) {
 			return this.ipPatterns.get(index);
 		}

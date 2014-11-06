@@ -52,14 +52,15 @@ public class DetectionFrequencyIp extends DetectionFrequency {
 		if (object == null) {
 			return false;
 		}
-		else if (object.getClass()==DetectionFrequencyIp.class) {
+		else if (object instanceof DetectionFrequencyIp) {
 			return ((DetectionFrequencyIp) object).match.equals(this.match);
 		}
-		else if (object.getClass()==InetAddress.class) {
+		else if (object instanceof InetAddress) {
 			return ((InetAddress) object).equals(this.match);
 		}
 		else {
 			System.err.println("DEBUG: Super called for a DetectionFrequencyIp object's equals method.");
+			new Exception().printStackTrace();
 			return super.equals(object);
 		}
 	}

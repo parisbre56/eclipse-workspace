@@ -1,5 +1,6 @@
 package accumulator;
 
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -136,6 +137,36 @@ public class Accumulator_SharedMemory {
 		if(data!=null) {
 			data.setDisconnectedIfTimedOut();
 		}
+	}
+
+	public void addMaliciousIP(String string) {
+		MaliciousPattern pattern = new MaliciousPattern(string, false);
+		updateWithPatternAdded(pattern);
+	}
+
+	public void addMaliciousString(String string) {
+		MaliciousPattern pattern = new MaliciousPattern(string, true);
+		updateWithPatternAdded(pattern);
+	}
+
+	private void updateWithPatternAdded(MaliciousPattern pattern) {
+		if(maliciousPatterns.addIfAbsent(pattern)) {
+			for(Enumeration<ConnectionData> connIt = connectionData.elements(); connIt.hasMoreElements();) {
+				connIt.nextElement().patternAddedNotification(pattern);
+			}
+		}
+	}
+
+	/**
+	 * @param connID The id of the connection to check and mark as closed
+	 * @return True if a not disconnected connection with the provided id was found and marked as closed, false otherwise
+	 */
+	public boolean setDisconnectedIfNotDisconnected(String connID) {
+		ConnectionData conn = connectionData.get(connID);
+		if(conn!=null) {
+			return conn.setDisconnectedIfNotDisconnected();
+		}
+		return false;
 	}
 
 }

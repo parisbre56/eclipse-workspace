@@ -1,9 +1,8 @@
 /**
  * 
  */
-package accumulator.threads;
+package exceptions;
 
-import exceptions.NTMonException;
 
 /** Indicates that there was a problem with a value being out of its expected bounds
  * @author Parisbre56

@@ -104,7 +104,15 @@ public class InterfaceStatistics {
 		
 		//Then search for the appropriate entry for that address (or create it if it doesn't exist) and insert it.
 		InterfaceAddressStats stat = new InterfaceAddressStats(addr);
-		int index = this.interfaceAdressesStats.indexOf(stat);
+		int index = -1;
+		int tempIndex = 0;
+		for(InterfaceAddressStats e : this.interfaceAdressesStats) {
+			if(e.equals(stat)) {
+				index=tempIndex;
+				break;
+			}
+			++tempIndex;
+		}
 		if(index>=0) {
 			this.interfaceAdressesStats.get(index).addIpEvent(pat);
 		}
@@ -138,7 +146,15 @@ public class InterfaceStatistics {
 		
 		//Then search for the appropriate entry for that address (or create it if it doesn't exist) and insert it.
 		InterfaceAddressStats stat = new InterfaceAddressStats(addr);
-		int index = this.interfaceAdressesStats.indexOf(stat);
+		int index = -1;
+		int tempIndex = 0;
+		for(InterfaceAddressStats e : this.interfaceAdressesStats) {
+			if(e.equals(stat)) {
+				index=tempIndex;
+				break;
+			}
+			++tempIndex;
+		}
 		if(index>=0) {
 			this.interfaceAdressesStats.get(index).addStringEventCollection(collection);
 		}
@@ -172,14 +188,15 @@ public class InterfaceStatistics {
 		else if (obj == null) {
 			return false;
 		}
-		else if (obj.getClass()==InterfaceStatistics.class) {
+		else if (obj instanceof InterfaceStatistics) {
 			return ((InterfaceStatistics) obj).interfaceName.equals(this.interfaceName);
 		}
-		else if (obj.getClass()==String.class) {
+		else if (obj instanceof String) {
 			return ((String) obj).equals(this.interfaceName);
 		}
 		else {
 			System.err.println("DEBUG: Super called for an InterfaceStatistics object's equals method.");
+			new Exception().printStackTrace();
 			return super.equals(obj);
 		}
 	}

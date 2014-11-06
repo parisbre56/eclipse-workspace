@@ -53,7 +53,7 @@ public class DataRetrieverThread implements Runnable {
 				}
 				//Clear input on failure
 				try {
-					Node_Main.is.skip(Long.MAX_VALUE);
+					Node_Main.skipInput();
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -134,28 +134,28 @@ public class DataRetrieverThread implements Runnable {
 			else if(response==StatusCode.MALICIOUS_IP_ADDITION.ordinal()) {
 				int length=Node_Main.is.readInt();
 				byte[] bytes = new byte[length];
-				Node_Main.is.read(bytes, 0, length);
+				Node_Main.is.readFully(bytes);
 				String data=new String(bytes);
 				Node_Main.node_SharedMemory.addIP(data);
 			}
 			else if(response==StatusCode.MALICIOUS_STRING_ADDITION.ordinal()) {
 				int length=Node_Main.is.readInt();
 				byte[] bytes = new byte[length];
-				Node_Main.is.read(bytes, 0, length);
+				Node_Main.is.readFully(bytes);
 				String data=new String(bytes);
 				Node_Main.node_SharedMemory.addString(data);
 			}
 			else if(response==StatusCode.MALICIOUS_IP_REMOVAL.ordinal()) {
 				int length=Node_Main.is.readInt();
 				byte[] bytes = new byte[length];
-				Node_Main.is.read(bytes, 0, length);
+				Node_Main.is.readFully(bytes);
 				String data=new String(bytes);
 				Node_Main.node_SharedMemory.removeIP(data);
 			}
 			else if(response==StatusCode.MALICIOUS_STRING_REMOVAL.ordinal()) {
 				int length=Node_Main.is.readInt();
 				byte[] bytes = new byte[length];
-				Node_Main.is.read(bytes, 0, length);
+				Node_Main.is.readFully(bytes);
 				String data=new String(bytes);
 				Node_Main.node_SharedMemory.removeString(data);
 			}

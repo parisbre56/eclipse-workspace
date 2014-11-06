@@ -65,7 +65,7 @@ public class PacketInspectorThread implements Runnable {
 		}
 		else {
 			//While the program is not exiting and the interface still exists
-			while(Node_Main.exiting.get()!=false && Node_Main.node_SharedMemory.containsPcapIf(this.currIf)) {
+			while(Node_Main.exiting.get()==false && Node_Main.node_SharedMemory.containsPcapIf(this.currIf)) {
 				retVal=pcap.loop(Node_Main.node_ConfigClass.getPacketBatchSize(), new PacketInspectionHandler(this.currIf), Node_Main.node_SharedMemory);
 				if(retVal!=Pcap.OK && retVal!=Pcap.ERROR_BREAK) {
 					System.err.println("ERROR: "+retVal+" returned from pcap.loop method");

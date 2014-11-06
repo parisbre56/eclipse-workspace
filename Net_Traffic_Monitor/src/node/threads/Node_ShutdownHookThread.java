@@ -55,6 +55,7 @@ public class Node_ShutdownHookThread implements Runnable {
 		for(Iterator<Thread> it = threads.iterator(); it.hasNext() ;) {
 			Thread t = it.next();
 			if(t.isAlive()) {
+				System.err.println("DEBUG: Still alive: "+t.getName());
 				return true;
 			}
 		}

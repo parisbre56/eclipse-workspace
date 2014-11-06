@@ -62,7 +62,15 @@ public class InterfaceAddressStats {
 	 * @param pat The malicious IP address that was detected.
 	 */
 	public void addIpEvent(StringPattern pat) {
-		int index = this.detectionStringFrequencies.indexOf(pat);
+		int index = -1;
+		int tempIndex = 0;
+		for(DetectionFrequencyString e : this.detectionIpFrequencies) {
+			if(e.equals(pat)) {
+				index=tempIndex;
+				break;
+			}
+			++tempIndex;
+		}
 		if(index>=0) {
 			this.detectionIpFrequencies.get(index).addDetection();
 		}
@@ -78,7 +86,15 @@ public class InterfaceAddressStats {
 	 */
 	public void addStringEventCollection(LinkedList<StringPattern> collection) {
 		for(StringPattern pat : collection) {
-			int index = this.detectionStringFrequencies.indexOf(pat);
+			int index = -1;
+			int tempIndex = 0;
+			for(DetectionFrequencyString e : this.detectionStringFrequencies) {
+				if(e.equals(pat)) {
+					index=tempIndex;
+					break;
+				}
+				++tempIndex;
+			}
 			if(index>=0) {
 				this.detectionStringFrequencies.get(index).addDetection();
 			}
@@ -112,14 +128,15 @@ public class InterfaceAddressStats {
 		else if (obj == null) {
 			return false;
 		}
-		else if (obj.getClass()==InterfaceAddressStats.class) {
+		else if (obj instanceof InterfaceAddressStats) {
 			return ((InterfaceAddressStats) obj).addr.equals(this.addr);
 		}
-		else if (obj.getClass()==InetAddress.class) {
+		else if (obj instanceof InetAddress) {
 			return ((InetAddress) obj).equals(this.addr);
 		}
 		else {
 			System.err.println("DEBUG: Super called for an InterfaceAddressStats object's equals method.");
+			new Exception().printStackTrace();
 			return super.equals(obj);
 		}
 	}

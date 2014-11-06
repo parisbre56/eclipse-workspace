@@ -12,7 +12,14 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import shared_data.StatusCode;
@@ -68,7 +75,7 @@ public class Node_Main {
 	static public final AtomicBoolean exiting = new AtomicBoolean(false);
 	/** Indicates that the exiting variable has been set due to a fatal exception.
 	 */
-	private static final AtomicBoolean exitingException = new AtomicBoolean(false);
+	public static final AtomicBoolean exitingException = new AtomicBoolean(false);
 	
 	//Shared thread data
 	/** Keeps a list of all the threads that ever ran in the system.<br>
@@ -133,8 +140,9 @@ public class Node_Main {
 		Runtime.getRuntime().addShutdownHook(new Thread(null, new Node_ShutdownHookThread(), "Shutdown Hook Thread"));
 		
 		//Start the identification thread.
-		threads.add(new Thread(null, new IdentificationThread(), "Identification Thread"));
-		threads.get(threads.size()-1).start();
+		Thread thread = new Thread(null, new IdentificationThread(), "Identification Thread");
+		threads.add(thread);
+		thread.start();
 		
 		// Wait for the all clear from the identification thread.
 		while(identificationReady.get()==false) {
@@ -157,8 +165,9 @@ public class Node_Main {
 		}
 		
 		//Start the data sender thread
-		threads.add(new Thread(null, new DataSenderThread(), "Data Sender Thread"));
-		threads.get(threads.size()-1).start();
+		thread = new Thread(null, new DataSenderThread(), "Data Sender Thread");
+		threads.add(thread);
+		thread.start();
 		
 		//Wait for the all clear from the data sender thread
 		while(senderReady.get()==false) {
@@ -181,12 +190,14 @@ public class Node_Main {
 		}
 		
 		//Start the data retriever thread
-		threads.add(new Thread(null, new DataRetrieverThread(), "Data Retriever Thread"));
-		threads.get(threads.size()-1).start();
+		thread = new Thread(null, new DataRetrieverThread(), "Data Retriever Thread");
+		threads.add(thread);
+		thread.start();
 		
 		//Start the interface checker thread.
-		threads.add(new Thread(null, new InterfaceCheckerThread(), "Interface Checker Thread"));
-		threads.get(threads.size()-1).start();
+		thread = new Thread(null, new InterfaceCheckerThread(), "Interface Checker Thread");
+		threads.add(thread);
+		thread.start();
 		
 		//Add self to thread list
 		threads.add(Thread.currentThread());
@@ -331,6 +342,32 @@ public class Node_Main {
 		
 		// TODO Set config data
 	}
+	
+	/** Used to skip
+	 */
+	private static final ExecutorService pool = Executors.newSingleThreadExecutor();
+	
+	/** Clears input stream. Waits 10 microseconds for the skip to complete
+	 * @throws IOException
+	 */
+	public static void skipInput() throws IOException {
+		//TODO check this
+		/*Future<Long> skipFuture = skipInputTask();
+		try {
+			skipFuture.get(10, TimeUnit.MICROSECONDS);
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			skipFuture.cancel(true);
+		}*/
+	}
+	
+	private static Future<Long> skipInputTask() throws IOException {
+		return pool.submit(new Callable<Long>() {
+			@Override
+			public Long call() throws Exception {
+				return Node_Main.is.skip(Long.MAX_VALUE);
+			}
+		});
+	}
 
 	/** Sends a refresh request to the server, to ensure that everything is OK with the connection.<br> 
 	 * If there is a fatal error, the program starts its exit sequence and throws NTMonUnableToRefreshException!!!<br>
@@ -396,7 +433,7 @@ public class Node_Main {
 		}
 		//Try to clear input stream
 		try {
-			Node_Main.is.skip(Long.MAX_VALUE);
+			skipInput();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -410,6 +447,7 @@ public class Node_Main {
 			response = is.readInt();
 		}
 		catch (IOException e) {
+			e.printStackTrace();
 			System.err.println("ERROR: Unable to refresh connection, closing connection...");
 			is.close();
 			os.close();

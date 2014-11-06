@@ -57,7 +57,14 @@ public class Accumulator_Main {
 		//Add shutdown hook that waits for all operations to finish
 		Runtime.getRuntime().addShutdownHook(new Thread(null, new Accumulator_ShutdownHookThread(), "Shutdown Hook Thread"));
 		
-		//TODO Set up the necessary data structures/sql connections here
+		//TODO Set up the necessary data structures/sql connections here. Maybe start threads
+		
+		//Load dummy data
+		//TODO replace with load from sql
+		accumulator_SharedMemory.addMaliciousIP("8.8.8.8");
+		accumulator_SharedMemory.addMaliciousIP("www.google.gr");
+		accumulator_SharedMemory.addMaliciousString("[h-k]ello");
+		accumulator_SharedMemory.addMaliciousString("http:*");
 		
 		//Put self in thread list
 		Accumulator_Main.threads.add(Thread.currentThread());
@@ -76,9 +83,10 @@ public class Accumulator_Main {
 					Socket connection = servSock.accept();
 					connection.setReuseAddress(true);
 					//Start connection handler for this thread
-					threads.add(new Thread(null, new ConnectionProcessorThread(connection, count), "Connection "
-							+ "Processor Thread "+Integer.toString(count)));
-					threads.get(threads.size()-1).start();
+					Thread thread = new Thread(null, new ConnectionProcessorThread(connection, count), "Connection "
+							+ "Processor Thread "+Integer.toString(count));
+					threads.add(thread);
+					thread.start();
 					++count;
 				} catch (SocketTimeoutException e) {
 					//Do nothing. The loop will check the exit condition

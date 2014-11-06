@@ -13,6 +13,7 @@ import java.net.UnknownHostException;
 import java.util.LinkedList;
 
 import exceptions.NTMonException;
+import exceptions.NTMonOutOfBoundsException;
 import shared_data.StatusCode;
 import accumulator.Accumulator_Main;
 import accumulator.MaliciousPatternEvent;
@@ -53,7 +54,8 @@ public class ConnectionProcessorThread implements Runnable {
 			os = new DataOutputStream(this.conn.getOutputStream());
 			
 			//Start processing incoming data
-			while(Accumulator_Main.exiting.get()==false) {
+			boolean disconnected = false;
+			while(Accumulator_Main.exiting.get()==false&&disconnected  == false) {
 				//Get signal
 				int inputInt;
 				try {
@@ -63,12 +65,16 @@ public class ConnectionProcessorThread implements Runnable {
 				catch (SocketTimeoutException e) {
 					//If refresh rate amount of seconds passes, mark it as timed out
 					System.err.println("DEBUG: Connection "+Integer.toString(this.count)+" timed out");
-					Accumulator_Main.accumulator_SharedMemory.setTimedOut(this.connID);
+					if(this.connID!=null) {
+						Accumulator_Main.accumulator_SharedMemory.setTimedOut(this.connID);
+					}
 					++timeoutCount;
 					//If it has timed out a set number of times, mark it as disconnected (if it hasn't
 					//connected to any other threads) and stop this thread
 					if(timeoutCount>Accumulator_Main.accumulator_configClass.getTimeoutTimes()) {
-						Accumulator_Main.accumulator_SharedMemory.setDisconnectedIfTimedOut(this.connID);
+						if(this.connID!=null) {
+							Accumulator_Main.accumulator_SharedMemory.setDisconnectedIfTimedOut(this.connID);
+						}
 						break;
 					}
 					continue;
@@ -77,12 +83,21 @@ public class ConnectionProcessorThread implements Runnable {
 				inputSignal = getStatusCodeFromInt(inputInt);
 				switch(inputSignal) {
 				case ALL_DATA_REQUEST:
+					System.err.println("DEBUG: Start of ALL_DATA_REQUEST: "+
+							Integer.toString(this.count)+":"+this.connID);
 					sendDataDiff(Accumulator_Main.accumulator_SharedMemory.refillDataQueue(this.connID),os);
+					System.err.println("DEBUG: End of ALL_DATA_REQUEST: "+
+							Integer.toString(this.count)+":"+this.connID);
 					break;
 				case DATA_DIFF_REQUEST:
+					System.err.println("DEBUG: Start of DATA_DIFF_REQUEST: "+
+							Integer.toString(this.count)+":"+this.connID);
 					sendDataDiff(Accumulator_Main.accumulator_SharedMemory.getDataQueue(this.connID),os);
+					System.err.println("DEBUG: End of DATA_DIFF_REQUEST: "+
+							Integer.toString(this.count)+":"+this.connID);
 					break;
 				case DATA_INCOMING_NOTIFICATION:
+					System.err.println("DEBUG: Start of incoming data from connection "+this.count+":"+this.connID);
 					boolean stateInterface = true;
 					inputInt=is.readInt();
 					inputSignal = getStatusCodeFromInt(inputInt);
@@ -93,6 +108,7 @@ public class ConnectionProcessorThread implements Runnable {
 						}
 						else if(inputSignal==StatusCode.INTERFACE_DECLARATION) {
 							String interfaceName = getString(is, os);
+							boolean interfaceIsActive = is.readBoolean();
 							stateInterface = false;
 							boolean stateInterfaceIp = true;
 							inputInt=is.readInt();
@@ -130,20 +146,24 @@ public class ConnectionProcessorThread implements Runnable {
 										}
 										else if(inputSignal==StatusCode.MALICIOUS_IP_ACTIVITY) {
 											String patternName = getString(is, os);
+											int frequency = is.readInt();
 											//TODO insert detection event into SQL database insertion queue
 											System.err.println("DEBUG: Detection event: |Int: "+interfaceName+
-													" |Ad: "+interfaceAddress.getHostAddress()+
-													" |Pat: "+patternName+" |Type: IP");
+													" |On: "+interfaceIsActive+
+													" |Ad: "+interfaceAddress+
+													" |Pat: "+patternName+" |Type: IP |Freq: "+Integer.toString(frequency));
 											inputInt=is.readInt();
 											inputSignal = getStatusCodeFromInt(inputInt);
 											continue;
 										}
 										else if(inputSignal==StatusCode.MALICIOUS_STRING_ACTIVITY) {
 											String patternName = getString(is, os);
+											int frequency = is.readInt();
 											//TODO insert detection event into SQL database insertion queue
 											System.err.println("DEBUG: Detection event: |Int: "+interfaceName+
-													" |Ad: "+interfaceAddress.getHostAddress()+
-													" |Pat: "+patternName+" |Type: String");
+													" |On: "+interfaceIsActive+
+													" |Ad: "+interfaceAddress+
+													" |Pat: "+patternName+" |Type: String |Freq: "+Integer.toString(frequency));
 											inputInt=is.readInt();
 											inputSignal = getStatusCodeFromInt(inputInt);
 											continue;
@@ -181,10 +201,12 @@ public class ConnectionProcessorThread implements Runnable {
 					//If this name is not the one associated with this connection and is an active name, then
 					//the new connection can not get that id
 					if(!recID.equals(this.connID) && Accumulator_Main.accumulator_SharedMemory.containsActiveID(recID)) {
+						System.err.println("DEBUG: Name "+recID+" is already registered");
 						os.writeInt(StatusCode.NAME_ALREADY_EXISTS.ordinal());
 					}
 					else {
 						if(Accumulator_Main.accumulator_SharedMemory.addConnection(recID)) {
+							System.err.println("DEBUG: Registered "+recID);
 							//Mark old connection as timed out
 							if(this.connID!=null) {
 								Accumulator_Main.accumulator_SharedMemory.setTimedOut(this.connID);
@@ -195,6 +217,7 @@ public class ConnectionProcessorThread implements Runnable {
 							os.writeInt(StatusCode.ALL_CLEAR.ordinal());
 						}
 						else {
+							System.err.println("DEBUG: Name "+recID+" is already registered");
 							os.writeInt(StatusCode.NAME_ALREADY_EXISTS.ordinal());
 						}
 					}
@@ -203,13 +226,18 @@ public class ConnectionProcessorThread implements Runnable {
 					recID = getString(is, os);
 					//If this is the current ID, make sure it is marked as active
 					if(recID.equals(this.connID)) {
+						System.err.println("DEBUG: Normal refresh for "+recID);
 						Accumulator_Main.accumulator_SharedMemory.addConnection(this.connID);
+						os.writeInt(StatusCode.ALL_CLEAR.ordinal());
 					}
 					else {
 						//If this isn't the current ID and is a valid ID, 
 						//make it the current ID and mark the old one as disconnected
 						if(Accumulator_Main.accumulator_SharedMemory.containsNotDisconnectedID(recID)) {
-							Accumulator_Main.accumulator_SharedMemory.setTimedOut(this.connID);
+							if(this.connID!=null) {
+								Accumulator_Main.accumulator_SharedMemory.setTimedOut(this.connID);
+							}
+							System.err.println("DEBUG: Refresh: Connection chenging from "+this.count+":"+this.connID+" to "+recID);
 							this.connID=recID;
 							Accumulator_Main.accumulator_SharedMemory.addConnection(this.connID);
 							this.conn.setSoTimeout(Accumulator_Main.accumulator_SharedMemory.getRefreshRate(this.connID)*1000);
@@ -219,9 +247,11 @@ public class ConnectionProcessorThread implements Runnable {
 						else {
 							//Since we know it is neither active nor timed out, it is disconnected
 							if(Accumulator_Main.accumulator_SharedMemory.containsID(recID)) {
+								System.err.println("DEBUG: Refresh: Refresh failed for disconnected client "+recID);
 								os.writeInt(StatusCode.CLIENT_DISCONNECTED.ordinal());
 							}
 							else {
+								System.err.println("DEBUG: Refresh: Refresh failed for nonexistent client "+recID);
 								os.writeInt(StatusCode.NO_SUCH_CLIENT.ordinal());
 							}
 						}
@@ -244,10 +274,20 @@ public class ConnectionProcessorThread implements Runnable {
 						Accumulator_Main.accumulator_SharedMemory.setRefreshRate(this.connID,tempInt);
 					}
 					break;
+				case EXIT_REQUEST:
+					if(Accumulator_Main.accumulator_SharedMemory.setDisconnectedIfNotDisconnected(this.connID)) {
+						System.err.println("DEBUG: Disconnected: "+this.count+":"+this.connID);
+						os.writeInt(StatusCode.ALL_CLEAR.ordinal());
+					}
+					else {
+						System.err.println("DEBUG: Disconnected: No such client: "+this.count+":"+this.connID);
+						os.writeInt(StatusCode.NO_SUCH_CLIENT.ordinal());
+					}
+					disconnected=true;
+					break;
 				case CLEAR_MEMORY_REQUEST:
 				case ALL_CLEAR:
 				case END_OF_DATA:
-				case EXIT_REQUEST:
 				case INTERFACE_ADDRESS_DECLARATION:
 				case INTERFACE_DECLARATION:
 				case MALICIOUS_IP_ACTIVITY:
@@ -269,11 +309,15 @@ public class ConnectionProcessorThread implements Runnable {
 			}
 		} catch (IOException e) {
 			System.err.println("ERROR: Unable to process connection "+Integer.toString(this.count)+".");
-			Accumulator_Main.accumulator_SharedMemory.setTimedOut(this.connID);
+			if(this.connID!=null) {
+				Accumulator_Main.accumulator_SharedMemory.setTimedOut(this.connID);
+			}
 			e.printStackTrace();
 		} catch (NTMonException e) {
 			System.err.println("ERROR: Problem when processing connection "+Integer.toString(this.count));
-			Accumulator_Main.accumulator_SharedMemory.setTimedOut(this.connID);
+			if(this.connID!=null) {
+				Accumulator_Main.accumulator_SharedMemory.setTimedOut(this.connID);
+			}
 			e.printStackTrace();
 		}
 		//Close connection, remove self from thread list and exit
@@ -313,6 +357,7 @@ public class ConnectionProcessorThread implements Runnable {
 			throw new NTMonOutOfBoundsException("The incoming string length "+stringLength+" was invalid");
 		}
 		byte[] name = new byte[stringLength];
+		is.readFully(name);
 		String recID = new String(name);
 		return recID;
 	}
@@ -328,15 +373,21 @@ public class ConnectionProcessorThread implements Runnable {
 	private static InetAddress getAddress(DataInputStream is, DataOutputStream os) 
 			throws IOException, NTMonOutOfBoundsException {
 		int addrLength = is.readInt();
-		if(addrLength<=0) {
+		//0 means no address for this capture
+		if(addrLength==0) {
+			return null;
+		}
+		if(addrLength<0) {
 			os.writeInt(StatusCode.VALUE_OUT_OF_BOUNDS.ordinal());
 			throw new NTMonOutOfBoundsException("The incoming address length "+addrLength+" was invalid");
 		}
 		byte[] addr = new byte[addrLength];
+		is.readFully(addr);
 		try {
 			InetAddress recAd = InetAddress.getByAddress(addr);
 			return recAd;
 		} catch (UnknownHostException e) {
+			os.writeInt(StatusCode.VALUE_OUT_OF_BOUNDS.ordinal());
 			throw new NTMonOutOfBoundsException("The incoming address length "+addrLength+" was invalid",e);
 		}
 	}

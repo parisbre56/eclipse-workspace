@@ -21,7 +21,7 @@ public class ConnectionData {
 	}
 	
 	private ConnectionState connectionState;
-	volatile int timeout;
+	private volatile int timeout;
 	private final LinkedList<MaliciousPatternEvent> dataQueue;
 
 	/** Creates a connection at the default state (Disconnected) and with the default timeout 
@@ -149,6 +149,32 @@ public class ConnectionData {
 			case ACTIVE:
 			default:
 				return;
+			}
+		}
+	}
+
+	/** Inserts the pattern addition event in the event queue to be transferred to the client 
+	 * @param pattern The pattern to insert in the queue
+	 */
+	public void patternAddedNotification(MaliciousPattern pattern) {
+		synchronized (this.dataQueue) {
+			this.dataQueue.add(new MaliciousPatternEvent(pattern, true));
+		} 
+	}
+
+	/**
+	 * @return True if this connection was not marked as disconnected before and is marked as disconnected now, false otherwise
+	 */
+	public boolean setDisconnectedIfNotDisconnected() {
+		synchronized(this.connectionState) {
+			switch(this.connectionState) {
+			case DISCONNECTED:
+				return false;
+			case ACTIVE:
+			case TIMED_OUT:
+			default:
+				this.connectionState=ConnectionState.DISCONNECTED;
+				return true;
 			}
 		}
 	}

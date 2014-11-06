@@ -59,6 +59,7 @@ public class DataSenderThread implements Runnable {
 				//TODO change this to make it use a cheaper data structure?
 				this.localCopy = new Node_SharedMemory(Node_Main.node_SharedMemory);
 				try{
+					//Refresh connection and send data
 					Node_Main.refreshConnectionRequest();
 					sendData();
 				}

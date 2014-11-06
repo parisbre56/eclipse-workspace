@@ -156,7 +156,7 @@ public class IdentificationThread implements Runnable {
 		
 		//Send the refresh rate to the server (concurrency becomes an issue, must synchronize)
 		int retries = 0;
-		while(true) {
+		while(Node_Main.exiting.get()==false) {
 			++retries;
 			try{
 				synchronized(Node_Main.accumulatorConnection) {
@@ -184,7 +184,7 @@ public class IdentificationThread implements Runnable {
 			}
 			//Try to clear input stream
 			try {
-				Node_Main.is.skip(Long.MAX_VALUE);
+				Node_Main.skipInput();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -213,7 +213,7 @@ public class IdentificationThread implements Runnable {
 		//to ensure that all data is written first
 		//then send the appropriate message to the server and exit.
 		for(Thread toJoin : Node_Main.threads) {
-			if(toJoin.equals(Thread.currentThread())) {
+			if(toJoin.getId()!=Thread.currentThread().getId()) {
 				Boolean joined=false;
 				while(joined==false) {
 					try {
@@ -231,7 +231,7 @@ public class IdentificationThread implements Runnable {
 		//Even though this should be the only thread alive at this point, keep it synchronized, just in case.
 		synchronized(Node_Main.accumulatorConnection) {
 			retries=0;
-			while(true) {
+			while(Node_Main.exitingException.get()==false) {
 				try {
 					Node_Main.refreshConnectionRequest();
 					Node_Main.os.writeInt(StatusCode.EXIT_REQUEST.ordinal());

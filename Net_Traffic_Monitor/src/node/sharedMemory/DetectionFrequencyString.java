@@ -51,17 +51,18 @@ public class DetectionFrequencyString extends DetectionFrequency {
 		if (object == null) {
 			return false;
 		}
-		else if (object.getClass()==DetectionFrequencyString.class) {
+		else if (object instanceof DetectionFrequencyString) {
 			return ((DetectionFrequencyString) object).match.equals(this.match);
 		}
-		else if (object.getClass()==StringPattern.class) {
+		else if (object instanceof StringPattern) {
 			return ((StringPattern) object).equals(this.match);
 		}
-		else if (object.getClass()==String.class) {
+		else if (object instanceof String) {
 			return ((String) object).equals(this.match.pattern);
 		}
 		else {
 			System.err.println("DEBUG: Super called for a DetectionFrequencyString object's equals method.");
+			new Exception().printStackTrace();
 			return super.equals(object);
 		}
 	}

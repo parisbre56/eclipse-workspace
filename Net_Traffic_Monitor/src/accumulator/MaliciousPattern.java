@@ -31,4 +31,44 @@ public class MaliciousPattern {
 		return new String(this.pattern);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (isString ? 1231 : 1237);
+		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		MaliciousPattern other = (MaliciousPattern) obj;
+		if (isString != other.isString) {
+			return false;
+		}
+		if (pattern == null) {
+			if (other.pattern != null) {
+				return false;
+			}
+		} else if (!pattern.equals(other.pattern)) {
+			return false;
+		}
+		return true;
+	}
+
 }

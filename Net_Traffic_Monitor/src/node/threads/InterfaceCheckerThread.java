@@ -32,6 +32,7 @@ public class InterfaceCheckerThread implements Runnable {
 		StringBuilder errorStr = new StringBuilder(); 
 		while(Node_Main.exiting.get()==false) {
 			errorStr.setLength(0);
+			newList.clear();
 			if(Pcap.findAllDevs(newList, errorStr)!=Pcap.OK) {
 				System.err.println("ERROR: Unable to retrieve interfaces. Reason: "+errorStr);
 				continue;
@@ -39,10 +40,12 @@ public class InterfaceCheckerThread implements Runnable {
 			//Start searching through the new list for additions
 			for(PcapIf newIf : newList) {
 				if(!Node_Main.node_SharedMemory.containsPcapIf(newIf)) {
+					System.err.println("DEBUG: Found interface: "+newIf.getName()+":"+newIf.getDescription());
 					Node_Main.node_SharedMemory.addInterface(newIf);
 					//Start a new inspector thread for them. Inspector threads should stop once they have no data to process.
-					Node_Main.threads.add(new Thread(null, new PacketInspectorThread(newIf), newIf.getName()+" Packet Inspector"));
-					Node_Main.threads.get(Node_Main.threads.size()-1).start();
+					Thread thread = new Thread(null, new PacketInspectorThread(newIf), newIf.getName()+" Packet Inspector");
+					Node_Main.threads.add(thread);
+					thread.start();
 				}
 			}
 			//Start searching through the old list for deletions

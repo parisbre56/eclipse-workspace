@@ -53,13 +53,13 @@ public class StringPattern {
 		if (object == null) {
 			return false;
 		}
-		else if(object.getClass()==StringPattern.class) {
+		else if(object instanceof StringPattern) {
 			return this.pattern.equals(((StringPattern) object).pattern);
 		}
-		else if (object.getClass()==String.class) {
+		else if (object instanceof String) {
 			return this.pattern.equals(object);
 		}
-		else if (object.getClass()==InetAddress.class) {
+		else if (object instanceof InetAddress) {
 			try {
 				return Arrays.asList(InetAddress.getAllByName(this.pattern)).contains(object);
 			} catch (UnknownHostException e) {
@@ -69,7 +69,8 @@ public class StringPattern {
 			}
 		}
 		else {
-			System.err.println("DEBUG: Super called for a StringPattern object's equals method.");
+			System.err.println("DEBUG: Super called for a StringPattern object's equals method: "+object.getClass().getCanonicalName());
+			new Exception().printStackTrace();
 			return super.equals(object);
 		}
 	}

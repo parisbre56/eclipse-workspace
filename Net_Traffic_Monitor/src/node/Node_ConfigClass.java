@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.jnetpcap.Pcap;
@@ -102,7 +103,25 @@ public class Node_ConfigClass {
 		}
 		//Try to put the MAC address in the default id
 		try {
-			setId(getId()+NetworkInterface.getNetworkInterfaces().nextElement().getHardwareAddress().toString());
+			byte [] mac = null;
+			for(Enumeration<NetworkInterface> netIfIt = NetworkInterface.getNetworkInterfaces(); 
+					netIfIt.hasMoreElements();) {
+				mac = netIfIt.nextElement().getHardwareAddress();
+				if(mac!=null && mac.length>0) {
+					break;
+				}
+			}
+			if(mac!=null) {
+				StringBuilder sb = new StringBuilder(18);
+			    for (byte b : mac) {
+			        if (sb.length() > 0) {
+			            sb.append(':');
+			        }
+			        System.err.println(String.format("%02x", b));
+			        sb.append(String.format("%02x", b));
+			    }
+				setId(getId()+sb.toString());
+			}
 		} catch (Exception e) {
 			System.err.println("DEBUG: Error while attempting to get MAC address.");
 			e.printStackTrace();
