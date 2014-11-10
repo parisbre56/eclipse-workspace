@@ -48,7 +48,7 @@ public class PacketInspectionHandler implements PcapPacketHandler<Node_SharedMem
 			}
 		}
 		//If this is an IPv6 packet
-		else if(packet.hasHeader(Ip6.ID)) {
+		if(packet.hasHeader(Ip6.ID)) {
 			Ip6 ip = packet.getHeader(new Ip6());
 			try {
 				InetAddress addrSource = InetAddress.getByAddress(ip.source());

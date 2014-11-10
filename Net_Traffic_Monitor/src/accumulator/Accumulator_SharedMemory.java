@@ -139,19 +139,28 @@ public class Accumulator_SharedMemory {
 		}
 	}
 
+	/** Adds a malicious IP pattern to memory
+	 * @param string The malicious IP pattern to add
+	 */
 	public void addMaliciousIP(String string) {
 		MaliciousPattern pattern = new MaliciousPattern(string, false);
 		updateWithPatternAdded(pattern);
 	}
 
+	/** Adds a malicious String pattern to memory
+	 * @param string The malicious string to add
+	 */
 	public void addMaliciousString(String string) {
 		MaliciousPattern pattern = new MaliciousPattern(string, true);
 		updateWithPatternAdded(pattern);
 	}
 
+	/** Adds the new pattern to all connections' data queue as an addition event
+	 * @param pattern The pattern to add
+	 */
 	private void updateWithPatternAdded(MaliciousPattern pattern) {
-		if(maliciousPatterns.addIfAbsent(pattern)) {
-			for(Enumeration<ConnectionData> connIt = connectionData.elements(); connIt.hasMoreElements();) {
+		if(this.maliciousPatterns.addIfAbsent(pattern)) {
+			for(Enumeration<ConnectionData> connIt = this.connectionData.elements(); connIt.hasMoreElements();) {
 				connIt.nextElement().patternAddedNotification(pattern);
 			}
 		}
@@ -162,7 +171,7 @@ public class Accumulator_SharedMemory {
 	 * @return True if a not disconnected connection with the provided id was found and marked as closed, false otherwise
 	 */
 	public boolean setDisconnectedIfNotDisconnected(String connID) {
-		ConnectionData conn = connectionData.get(connID);
+		ConnectionData conn = this.connectionData.get(connID);
 		if(conn!=null) {
 			return conn.setDisconnectedIfNotDisconnected();
 		}

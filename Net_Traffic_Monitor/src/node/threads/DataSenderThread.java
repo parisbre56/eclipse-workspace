@@ -78,10 +78,7 @@ public class DataSenderThread implements Runnable {
 			}
 		}
 		
-		Node_Main.threads.remove(Thread.currentThread());
-		synchronized(Node_Main.threads) {
-			Node_Main.threads.notifyAll();
-		}
+		Node_Main.exitThread();
 		return;
 	}
 

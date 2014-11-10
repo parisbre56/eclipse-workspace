@@ -38,8 +38,8 @@ public class MaliciousPattern {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (isString ? 1231 : 1237);
-		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
+		result = prime * result + (this.isString ? 1231 : 1237);
+		result = prime * result + ((this.pattern == null) ? 0 : this.pattern.hashCode());
 		return result;
 	}
 
@@ -58,14 +58,14 @@ public class MaliciousPattern {
 			return false;
 		}
 		MaliciousPattern other = (MaliciousPattern) obj;
-		if (isString != other.isString) {
+		if (this.isString != other.isString) {
 			return false;
 		}
-		if (pattern == null) {
+		if (this.pattern == null) {
 			if (other.pattern != null) {
 				return false;
 			}
-		} else if (!pattern.equals(other.pattern)) {
+		} else if (!this.pattern.equals(other.pattern)) {
 			return false;
 		}
 		return true;

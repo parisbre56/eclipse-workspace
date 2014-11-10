@@ -84,24 +84,24 @@ public class InterfaceAddressStats {
 	/** If the events do not exist they will be created.
 	 * @param collection The string patterns that should have their frequencies incremented
 	 */
-	public void addStringEventCollection(LinkedList<StringPattern> collection) {
-		for(StringPattern pat : collection) {
+	public void addStringEventCollection(LinkedList<StringPatternDetectionEvents> collection) {
+		for(StringPatternDetectionEvents pat : collection) {
 			int index = -1;
 			int tempIndex = 0;
 			for(DetectionFrequencyString e : this.detectionStringFrequencies) {
-				if(e.equals(pat)) {
+				if(e.equals(pat.pattern)) {
 					index=tempIndex;
 					break;
 				}
 				++tempIndex;
 			}
 			if(index>=0) {
-				this.detectionStringFrequencies.get(index).addDetection();
+				this.detectionStringFrequencies.get(index).addDetection(pat.matches);
 			}
 			else {
-				DetectionFrequencyString a = new DetectionFrequencyString(pat);
+				DetectionFrequencyString a = new DetectionFrequencyString(pat.pattern);
 				this.detectionStringFrequencies.add(a);
-				a.addDetection();
+				a.addDetection(pat.matches);
 			}
 		}
 	}
@@ -117,7 +117,8 @@ public class InterfaceAddressStats {
 		return result;
 	}
 
-	/** Checks if the addresses match for InterfaceAddressStats and InetAddress arguments
+	/** Checks if the addresses match for InterfaceAddressStats and InetAddress arguments<br>
+	 * Returns true for null arguments<br>
 	 * Otherwise is the same as Object.equals
 	 */
 	@Override
@@ -126,10 +127,13 @@ public class InterfaceAddressStats {
 			return true;
 		}
 		else if (obj == null) {
-			return false;
+			return this.addr==null;
 		}
 		else if (obj instanceof InterfaceAddressStats) {
-			return ((InterfaceAddressStats) obj).addr.equals(this.addr);
+			if(((InterfaceAddressStats) obj).addr!=null) {
+				return ((InterfaceAddressStats) obj).addr.equals(this.addr);
+			}
+			return this.addr==null;
 		}
 		else if (obj instanceof InetAddress) {
 			return ((InetAddress) obj).equals(this.addr);

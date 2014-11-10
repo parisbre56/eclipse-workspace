@@ -61,10 +61,7 @@ public class IdentificationThread implements Runnable {
 			synchronized(Node_Main.identificationReady) {
 				Node_Main.identificationReady.notifyAll();
 			}
-			Node_Main.threads.remove(Thread.currentThread());
-			synchronized(Node_Main.threads) {
-				Node_Main.threads.notifyAll();
-			}
+			Node_Main.exitThread();
 			return;
 		}
 		
@@ -118,10 +115,7 @@ public class IdentificationThread implements Runnable {
 						Node_Main.identificationReady.notifyAll();
 					}
 					Node_Main.accumulatorConnection.close();
-					Node_Main.threads.remove(Thread.currentThread());
-					synchronized(Node_Main.threads) {
-						Node_Main.threads.notifyAll();
-					}
+					Node_Main.exitThread();
 					return;
 				}
 				//If successful, change the Id in the settings and continue out of the loop
@@ -141,10 +135,7 @@ public class IdentificationThread implements Runnable {
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-			Node_Main.threads.remove(Thread.currentThread());
-			synchronized(Node_Main.threads) {
-				Node_Main.threads.notifyAll();
-			}
+			Node_Main.exitThread();
 			return;
 		}
 		
@@ -274,10 +265,7 @@ public class IdentificationThread implements Runnable {
 		}
 		
 		//Remove self from thread list before exiting
-		Node_Main.threads.remove(Thread.currentThread());
-		synchronized(Node_Main.threads) {
-			Node_Main.threads.notifyAll();
-		}
+		Node_Main.exitThread();
 		return;
 	}
 

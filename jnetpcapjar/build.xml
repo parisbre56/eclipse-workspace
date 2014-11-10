@@ -1,4 +1,4 @@
-<project name="Jnetpcapjar" basedir="." default="help">
+<project name="Jnetpcapjar" basedir="." default="all">
 
   <target name="help">
     <java classname="org.apache.tools.ant.Main">
@@ -33,6 +33,10 @@
       <zipfileset excludes="META-INF/*.MF" src="lib/jar-in-jar-loader.jar"/>
     </jar>
 
+  </target>
+	
+  <target name="all" depends="clean,build,jar">
+  
   </target>
 
 </project>

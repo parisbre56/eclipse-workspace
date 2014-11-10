@@ -9,7 +9,7 @@
 		<jnetpcapjar jarfile="./node.jar" targetmainclass="node.Node_Main" swtversion="">
 	
 			  <!-- Application Classes -->
-			  <fileset dir="./bin/" includes="**/*.class" />
+			  <fileset dir="./bin/" includes="node/**/*.class,shared_data/**/*.class,exceptions/**/*.class" />
 	  
 			  <!-- JNetPcap Jars -->
 			  <fileset dir="./src" includes="jnetpcap_*.jar" />
@@ -25,7 +25,7 @@
 		<swtjar jarfile="./accumulator.jar" targetmainclass="accumulator.Accumulator_Main" swtversion="4.3">
 	
 			  <!-- Application Classes -->
-			  <fileset dir="./bin/" includes="**/*.class" />
+			  <fileset dir="./bin/" includes="accumulator/**/*.class,shared_data/**/*.class,exceptions/**/*.class" />
 	  
 			  <!-- SWT Jars -->
 			  <fileset dir="./src" includes="swt-*-4.3.jar" />

@@ -27,6 +27,13 @@ public class DetectionFrequency {
 		this.frequency=new AtomicInteger(dF.frequency.get());
 	}
 	
+	/** Increment the detection frequency by the given value for this event
+	 * @param matches How many times this pattern was detected
+	 */
+	public void addDetection(int matches) {
+		this.frequency.addAndGet(matches);
+	}
+	
 	/** Increment the detection frequency by one for this event
 	 */
 	public void addDetection() {

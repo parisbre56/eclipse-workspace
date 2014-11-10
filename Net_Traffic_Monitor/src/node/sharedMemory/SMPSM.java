@@ -145,7 +145,7 @@ public class SMPSM {
 	 * @param collection A list of malicious string pattern detections to add to the interface
 	 * @param currIf The interface the capture was made on. Used to determine the Interface's current IP.
 	 */
-	public void addStringEventCollection(LinkedList<StringPattern> collection, PcapIf currIf) {
+	public void addStringEventCollection(LinkedList<StringPatternDetectionEvents> collection, PcapIf currIf) {
 		int index = -1;
 		int tempIndex = 0;
 		for(InterfaceStatistics e : this.interfaceStatistics) {

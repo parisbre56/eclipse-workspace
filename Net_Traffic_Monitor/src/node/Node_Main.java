@@ -12,23 +12,16 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import shared_data.StatusCode;
 import node.sharedMemory.Node_SharedMemory;
 import node.threads.DataRetrieverThread;
 import node.threads.DataSenderThread;
 import node.threads.IdentificationThread;
 import node.threads.InterfaceCheckerThread;
 import node.threads.Node_ShutdownHookThread;
+import shared_data.StatusCode;
 import exceptions.NTMonIAddrException;
 import exceptions.NTMonUnableToRefreshException;
 
@@ -133,87 +126,112 @@ public class Node_Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//Start checking arguments and load configuration file
-		useArgsForConfig(args);
-		
-		//Add shutdown hook that waits for all operations to finish
-		Runtime.getRuntime().addShutdownHook(new Thread(null, new Node_ShutdownHookThread(), "Shutdown Hook Thread"));
-		
-		//Start the identification thread.
-		Thread thread = new Thread(null, new IdentificationThread(), "Identification Thread");
-		threads.add(thread);
-		thread.start();
-		
-		// Wait for the all clear from the identification thread.
-		while(identificationReady.get()==false) {
-			synchronized(identificationReady) {
+		try {
+			//Start checking arguments and load configuration file
+			useArgsForConfig(args);
+			
+			//Add self to thread list
+			threads.add(Thread.currentThread());
+			
+			//Add shutdown hook that waits for all operations to finish
+			Runtime.getRuntime().addShutdownHook(new Thread(null, new Node_ShutdownHookThread(), "Shutdown Hook Thread"));
+			
+			//Start the identification thread.
+			Thread thread = new Thread(null, new IdentificationThread(), "Identification Thread");
+			threads.add(thread);
+			thread.start();
+			
+			// Wait for the all clear from the identification thread.
+			while(identificationReady.get()==false && exiting.get()==false) {
+				synchronized(identificationReady) {
+					try {
+						identificationReady.wait(defaultTimeout*1000);
+					} catch (InterruptedException e) {
+						System.err.println("DEBUG: Interrupted while waiting for the identification thread.");
+						e.printStackTrace();
+					}
+					if(identificationFailed.get()==true) {
+						System.err.println("ERROR: Identification thread failed. Exiting...");
+						exiting.set(true);
+						synchronized(exiting) {
+							exiting.notifyAll();
+						}
+						return;
+					}
+				}
+			}
+			
+			if(exiting.get()) {
+				return;
+			}
+			
+			//Start the data sender thread
+			thread = new Thread(null, new DataSenderThread(), "Data Sender Thread");
+			threads.add(thread);
+			thread.start();
+			
+			//Wait for the all clear from the data sender thread
+			while(senderReady.get()==false && exiting.get()==false) {
+				synchronized(senderReady) {
+					try {
+						senderReady.wait(defaultTimeout*1000);
+					} catch (InterruptedException e) {
+						System.err.println("DEBUG: Interrupted while waiting for the identification thread.");
+						e.printStackTrace();
+					}
+					if(senderFailed.get()==true) {
+						System.err.println("ERROR: Identification thread failed. Exiting...");
+						exiting.set(true);
+						synchronized (exiting) {
+							exiting.notifyAll();
+						}
+						return;
+					}
+				}
+			}
+			
+			if(exiting.get()) {
+				return;
+			}
+			
+			//Start the data retriever thread
+			thread = new Thread(null, new DataRetrieverThread(), "Data Retriever Thread");
+			threads.add(thread);
+			thread.start();
+			
+			if(exiting.get()) {
+				return;
+			}
+			
+			//Start the interface checker thread.
+			thread = new Thread(null, new InterfaceCheckerThread(), "Interface Checker Thread");
+			threads.add(thread);
+			thread.start();
+			
+			if(exiting.get()) {
+				return;
+			}
+			
+			// TODO Make this periodically check that all threads are running normally?
+			
+		} finally {
+			//Before exiting, write the configuration file if the user asked for it, including any changes made
+			if(Node_Main.argList.contains("-wc")) {
 				try {
-					identificationReady.wait(defaultTimeout*1000);
-				} catch (InterruptedException e) {
-					System.err.println("DEBUG: Interrupted while waiting for the identification thread.");
+					Node_Main.node_ConfigClass.createConfigFile(Node_Main.configFile);
+				} catch (IOException e) {
+					System.err.println("ERROR: Unable to save config file to "+Node_Main.configFile.getAbsolutePath());
 					e.printStackTrace();
 				}
-				if(identificationFailed.get()==true) {
-					System.err.println("ERROR: Identification thread failed. Exiting...");
-					exiting.set(true);
-					synchronized(exiting) {
-						exiting.notifyAll();
-					}
-					return;
-				}
 			}
+			
+			exitThread();
 		}
-		
-		//Start the data sender thread
-		thread = new Thread(null, new DataSenderThread(), "Data Sender Thread");
-		threads.add(thread);
-		thread.start();
-		
-		//Wait for the all clear from the data sender thread
-		while(senderReady.get()==false) {
-			synchronized(senderReady) {
-				try {
-					senderReady.wait(defaultTimeout*1000);
-				} catch (InterruptedException e) {
-					System.err.println("DEBUG: Interrupted while waiting for the identification thread.");
-					e.printStackTrace();
-				}
-				if(senderFailed.get()==true) {
-					System.err.println("ERROR: Identification thread failed. Exiting...");
-					exiting.set(true);
-					synchronized (exiting) {
-						exiting.notifyAll();
-					}
-					return;
-				}
-			}
-		}
-		
-		//Start the data retriever thread
-		thread = new Thread(null, new DataRetrieverThread(), "Data Retriever Thread");
-		threads.add(thread);
-		thread.start();
-		
-		//Start the interface checker thread.
-		thread = new Thread(null, new InterfaceCheckerThread(), "Interface Checker Thread");
-		threads.add(thread);
-		thread.start();
-		
-		//Add self to thread list
-		threads.add(Thread.currentThread());
-		
-		// TODO Make this periodically check that all threads are running normally?
-		
-		//Before exiting, write the configuration file if the user asked for it, including any changes made
-		if(Node_Main.argList.contains("-wc")) {
-			try {
-				Node_Main.node_ConfigClass.createConfigFile(Node_Main.configFile);
-			} catch (IOException e) {
-				System.err.println("ERROR: Unable to save config file to "+Node_Main.configFile.getAbsolutePath());
-				e.printStackTrace();
-			}
-		}
-		
+	}
+
+	/** Removes thread from thread list. Should be run before thread returns. 
+	 */
+	public static void exitThread() {
 		Node_Main.threads.remove(Thread.currentThread());
 		synchronized(Node_Main.threads) {
 			Node_Main.threads.notifyAll();
@@ -223,7 +241,7 @@ public class Node_Main {
 
 	/**
 	 * Sets the configuration according to the arguments and the configuration file
-	 * @param args
+	 * @param args The arguments provided to the main method
 	 */
 	private static void useArgsForConfig(String[] args) {
 		argList = Arrays.asList(args);
@@ -306,9 +324,10 @@ public class Node_Main {
 		// TODO Check arguments
 	}
 
-	/**
-	 * Changes the configuration according to the flags set
-	 * @param accumulatorAddress
+	/** Changes the configuration according to the flags set
+	 * @param accumulatorAddress The address of the accumulator. Can be ip (192.168.etc.xyz) or string (www.xxx.yyy). 
+	 * Null means use default.
+	 * @param accumulatorPort The port of the accumulator. Null means use default.
 	 */
 	private static void setDataFromFlags(String accumulatorAddress, String accumulatorPort) {
 		if(accumulatorAddress!=null) {
@@ -343,37 +362,21 @@ public class Node_Main {
 		// TODO Set config data
 	}
 	
-	/** Used to skip
-	 */
-	private static final ExecutorService pool = Executors.newSingleThreadExecutor();
-	
-	/** Clears input stream. Waits 10 microseconds for the skip to complete
-	 * @throws IOException
+	/** Attempts to clear the input stream of the accumulator connection
+	 * @throws IOException if there was a problem with reading
 	 */
 	public static void skipInput() throws IOException {
-		//TODO check this
-		/*Future<Long> skipFuture = skipInputTask();
-		try {
-			skipFuture.get(10, TimeUnit.MICROSECONDS);
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			skipFuture.cancel(true);
-		}*/
-	}
-	
-	private static Future<Long> skipInputTask() throws IOException {
-		return pool.submit(new Callable<Long>() {
-			@Override
-			public Long call() throws Exception {
-				return Node_Main.is.skip(Long.MAX_VALUE);
-			}
-		});
+		int av;
+		while ((av = Node_Main.is.available()) > 0 ) {
+			Node_Main.is.skip(av);
+		}
 	}
 
 	/** Sends a refresh request to the server, to ensure that everything is OK with the connection.<br> 
-	 * If there is a fatal error, the program starts its exit sequence and throws NTMonUnableToRefreshException!!!<br>
+	 * If there is a fatal error, the program starts its exit sequence and throws NTMonUnableToRefreshException<br>
 	 * If the connection is closed, an attempt will be made to reopen it. 
 	 * If it is unable to do so, it will initiate the exit sequence.<br>
-	 * Used by all threads before communication. <br>
+	 * Used by all threads before communication with the accumulator. <br>
 	 * NOT synchronized as the caller should had already done that.<br>
 	 * @param retries How many times this has failed and called itself 
 	 * @throws NTMonUnableToRefreshException If there was a fatal problem with the connection. The program will now EXIT.

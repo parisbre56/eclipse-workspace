@@ -16,7 +16,6 @@ import java.util.Properties;
 import org.jnetpcap.Pcap;
 
 import exceptions.NTMonConfigException;
-import exceptions.NTMonException;
 import exceptions.NTMonIAddrException;
 
 /** Configuration class. Container class. All intervals are in seconds
@@ -73,9 +72,8 @@ public class Node_ConfigClass {
 	private static final String snaplen_String = "SNAP_LENGTH";
 	private static final String snapTimeout_String = "SNAP_TIMEOUT";
 	
-	/**
-	 * @throws NTMonException 
-	 * 
+	
+	/** Creates a config class with the default values
 	 */
 	public Node_ConfigClass() {
 		//Initialize accumulator address to default

@@ -84,9 +84,8 @@ public class Node_SharedMemory {
 	}
 
 	/** 
-	 * Returns true if this contains an ACTIVE interface with the same name as newIf, else false
-	 * @param newIf
-	 * @return
+	 * @param newIf The interface to search for
+	 * @return true if this contains an ACTIVE interface with the same name as newIf, else false
 	 */
 	public boolean containsPcapIf(PcapIf newIf) {
 		return this.smpsm.containsActivePcapIf(newIf);
@@ -127,7 +126,7 @@ public class Node_SharedMemory {
 	 * Used to determine the interface's name and IP, which will be used to store the statistics if necessary.
 	 */
 	public void checkAndAddPayloadStatIfNecessary(String string, PcapIf currIf) {
-		LinkedList<StringPattern> collection = this.mpsm.getMatchingStringCollection(string);
+		LinkedList<StringPatternDetectionEvents> collection = this.mpsm.getMatchingStringCollection(string);
 		if(collection.size()>0) {
 			this.smpsm.addStringEventCollection(collection,currIf);
 		}

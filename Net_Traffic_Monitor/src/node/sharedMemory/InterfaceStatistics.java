@@ -102,6 +102,7 @@ public class InterfaceStatistics {
 			}
 		}
 		
+		
 		//Then search for the appropriate entry for that address (or create it if it doesn't exist) and insert it.
 		InterfaceAddressStats stat = new InterfaceAddressStats(addr);
 		int index = -1;
@@ -127,7 +128,7 @@ public class InterfaceStatistics {
 	 * @param collection A list of malicious string pattern detections to add to the interface
 	 * @param currIf The interface the capture was made on. Used to determine the Interface's current IP.
 	 */
-	public void addStringEventCollection(LinkedList<StringPattern> collection,
+	public void addStringEventCollection(LinkedList<StringPatternDetectionEvents> collection,
 			PcapIf currIf) {
 		//First search for the interface's address. First one found should do. If no suitable address is found, null is used.
 		InetAddress addr=null;

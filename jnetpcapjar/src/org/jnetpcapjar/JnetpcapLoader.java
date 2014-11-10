@@ -107,15 +107,15 @@ public static final String JNETPCAPJAR_MAIN_CLASS = "jnetpcapjar-TargetMainClass
   
   /**
   *  This method is responsible for extracting resource files from within the .jar to the temporary directory.
-  *  @param filePath The filepath relative to the root directory within the .jar from which to extract the file.
+  *  @param filePath The file path relative to the root directory within the .jar from which to extract the file.
   *  @return A file object to the extracted file
- * @throws JnetpcapLoadFailed If an error occured
+ * @throws JnetpcapLoadFailed If an error occurred
   **/
   public static File extract(String filePath) throws JnetpcapLoadFailed
   {
       try
       {
-          File f = File.createTempFile(filePath, null);
+          File f = File.createTempFile("jnetpcapjar_", "_"+filePath);
           try (FileOutputStream resourceOS = new FileOutputStream(f)) {
 	          byte[] byteArray = new byte[1024];
 	          int i;
@@ -224,7 +224,7 @@ private static Manifest getJnetpcapLoaderManifest() throws IOException
         .contains("mac") ? "osx" : osName.contains("linux")
         || osName.contains("nix") ? "linux" : "";
     String jnetpcapFileNameOsSuffixPart = osName.contains("win") ? "dll" : osName
-            .contains("mac") ? "so" : osName.contains("linux")
+            .contains("mac") ? "kext" : osName.contains("linux")
             || osName.contains("nix") ? "so" : "";
     if ("".equals(jnetpcapFileNameOsPart)||"".equals(jnetpcapFileNameOsSuffixPart))
     {

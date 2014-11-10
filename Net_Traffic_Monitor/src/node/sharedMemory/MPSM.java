@@ -6,6 +6,7 @@ package node.sharedMemory;
 import java.net.InetAddress;
 import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Holds all malicious IP patterns and malicious String patterns. Fully synchronized, no need for manual synchronization.
@@ -157,12 +158,17 @@ public class MPSM {
 	 * @param string The string containing the data that will be checked for matches
 	 * @return a collection of all regular expression patterns that had at least one match in the provided string.
 	 */
-	public LinkedList<StringPattern> getMatchingStringCollection(String string) {
-		LinkedList<StringPattern> retVal = new LinkedList<>();
+	public LinkedList<StringPatternDetectionEvents> getMatchingStringCollection(String string) {
+		LinkedList<StringPatternDetectionEvents> retVal = new LinkedList<>();
 		for(StringPattern p : this.stringPatterns) {
 			//If something in the string matches this pattern, add this pattern to the list
-			if(Pattern.compile(p.pattern).matcher(string).find()) {
-				retVal.add(p);
+			Matcher matcher = Pattern.compile(p.pattern).matcher(string);
+			int matches = 0;
+			while(matcher.find()) {
+				++matches;
+			}
+			if (matches>0) {
+				retVal.add(new StringPatternDetectionEvents(p,matches));
 			}
 		}
 		return retVal;
